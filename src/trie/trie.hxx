@@ -2,7 +2,7 @@
 
 #include "trie.hh"
 
-void
+inline void
 Trie::add_word(std::string letters, int frequency)
 {
     auto letter = letters.substr(0, 1);

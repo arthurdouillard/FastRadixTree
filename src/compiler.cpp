@@ -4,5 +4,5 @@
 
 int main(int argc, char *argv[]) {
     std::string path(argv[1]);
-    //create_trie(path);
+    create_trie(path);
 }

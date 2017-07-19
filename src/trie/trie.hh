@@ -18,7 +18,7 @@ public:
         , frequency(frequency)
     {}
 
-    void add_word(std::string letters, int frequency);
+    void add_word(std::string, int);
 };
 
 # include "trie.hxx"
