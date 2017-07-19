@@ -2,7 +2,7 @@
 
 #include <string>
 
-class Word:
+class Word
 {
     std::string content;
     int frequency;
@@ -13,6 +13,6 @@ class Word:
         , frequency(frequency)
         , distance(distance)
     {}
-}
+};
 
-#include "word.hxx"
+# include "word.hxx"

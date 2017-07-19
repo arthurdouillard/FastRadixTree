@@ -7,7 +7,7 @@ CMP=TextMiningCompiler
 APPCC=src/app.cpp
 CMPCC=src/compiler.cpp
 
-SRC=src/trie/trie.hxx src/word/word.hxx
+SRC=#src/trie/trie.hxx src/word/word.hxx
 
 
 all: app compiler
