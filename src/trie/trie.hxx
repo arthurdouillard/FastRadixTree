@@ -19,7 +19,7 @@ Trie::add_word(std::string letters, int frequency)
         this->children[letter]->is_word = true;
     }
     else
+    {
         this->children[letter]->add_word(letters.substr(1, letters.size()-1), frequency);
+    }
 }
-
-

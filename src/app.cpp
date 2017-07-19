@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "trie/trie.hxx"
-#include "word/word.hxx"
+#include "utils/utils.hh"
 
 int main(int argc, char *argv[]) {
-    std::cout << "App" << std::endl;
+    std::string path(argv[1]);
+    create_trie(path);
 }

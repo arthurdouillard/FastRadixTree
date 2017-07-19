@@ -4,6 +4,7 @@
 
 class Trie
 {
+public:
     bool is_word;
     std::map<std::string, Trie::Trie*> children;
     std::string characters;
