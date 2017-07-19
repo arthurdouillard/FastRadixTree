@@ -13,6 +13,8 @@ class Trie:
         , children(children)
         , characters(characters)
     {}
+
+    void add_word(std::string letters, int frequency);
 }
 
 #include "trie.hxx"
