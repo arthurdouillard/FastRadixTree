@@ -1,0 +1,6 @@
+*.sw?
+
+*.txt
+*.bin
+TextMiningApp
+TextMiningCompiler
