@@ -6,8 +6,6 @@ Trie *create_trie(std::string path) {
     std::ifstream dict(path);
 
     auto* root = new Trie(0, "");
-
-
     std::string word;
     int frequency;
   //  int i = 0;
