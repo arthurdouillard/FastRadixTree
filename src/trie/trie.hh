@@ -1,22 +1,22 @@
 #pragma once
 
-#include <map>
 #include <vector>
+#include <string>
 
 class Trie
 {
 public:
-    int frequency;
-    std::string value 
+    uint32_t frequency;
+    std::string value;
     std::vector<Trie::Trie*> children;
 
-    Trie(int frequency, std::string value, std::vector<Trie::Trie*> children,
+    Trie(uint32_t frequency, std::string value, std::vector<Trie::Trie*> children)
         : frequency(frequency)
         , children(children)
         , value(value)
     {}
 
-    void add_word(std::string, int);
+    void add_word(std::string, uint32_t);
 };
 
 # include "trie.hxx"
