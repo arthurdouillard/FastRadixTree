@@ -1,21 +1,19 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 class Trie
 {
 public:
-    bool is_word;
-    std::map<std::string, Trie::Trie*> children;
-    std::string characters;
     int frequency;
+    std::string value 
+    std::vector<Trie::Trie*> children;
 
-    Trie(bool is_word, std::map<std::string, Trie::Trie*> children,
-         std::string characters, int frequency)
-        : is_word(is_word)
+    Trie(int frequency, std::string value, std::vector<Trie::Trie*> children,
+        : frequency(frequency)
         , children(children)
-        , characters(characters)
-        , frequency(frequency)
+        , value(value)
     {}
 
     void add_word(std::string, int);
