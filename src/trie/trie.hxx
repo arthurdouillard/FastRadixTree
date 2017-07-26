@@ -25,21 +25,26 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
     size_t prefix;
 
     while (true) {
-        for (int i = 0; i < node->children->size(); i++)
+        for (size_t i = 0; i < node->children->size(); i++)
         {
             has_inserted = false;
-            auto* curr_child = node->children->at(i);
+            auto curr_child = node->children->at(i);
 
             prefix = get_common_prefix(curr_child->value, word);
             if (prefix == 0)
                 continue;
 
-            curr_child->value = curr_child->value.substr(prefix);
-            auto* new_child = new Trie(0, word.substr(0, prefix));
-            new_child->children->push_back(curr_child);
-            node->children->at(i) = new_child;
+            if (prefix == node->children->at(i)->value.length()) {
+                node = node->children->at(i).get();
+            }
+            else {
+                curr_child->value = curr_child->value.substr(prefix);
+                auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
+                new_child->children->push_back(curr_child);
+                node->children->at(i) = new_child;
+                node = new_child.get();
+            }
 
-            node = new_child;
             word = word.substr(prefix);
             has_inserted = true;
             break;
@@ -47,7 +52,7 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
 
         if (!has_inserted)
         {
-            auto* child = new Trie(frequency, word);
+            auto child = std::make_shared<Trie>(frequency, word);
             node->children->push_back(child);
             break;
         }
@@ -61,7 +66,7 @@ Trie::add_word(std::string word, uint32_t frequency)
     auto letter = word.substr(0, 1);
 
     int i = -1;
-    for (int j = 0; j < this->children.size(); j++)
+    for (size_t j = 0; j < this->children.size(); j++)
     {
         if (this->children[j]->value == letter)
         {
@@ -73,7 +78,7 @@ Trie::add_word(std::string word, uint32_t frequency)
     if (i == -1) 
     {
         // Letter not present among children.
-        auto* trie = new Trie(0, letter, std::vector<Trie::Trie*>());
+        auto trie = std::make_shared<Trie>(0, letter, std::vector<std::shared_ptr<Trie>>());
         this->children.push_back(trie);
         i = this->children.size() - 1;
     }
