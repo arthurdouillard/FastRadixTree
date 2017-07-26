@@ -34,19 +34,19 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
             if (prefix == 0)
                 continue;
 
-            if (prefix == node->children->at(i)->value.length()) {
+            if (prefix == node->children->at(i)->value.length())
                 node = node->children->at(i).get();
-            }
-            else {
+            else
+            {
                 curr_child->value = curr_child->value.substr(prefix);
                 auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
                 new_child->children->push_back(curr_child);
                 node->children->at(i) = new_child;
                 node = new_child.get();
+                has_inserted = true;
             }
 
             word = word.substr(prefix);
-            has_inserted = true;
             break;
         }
 
