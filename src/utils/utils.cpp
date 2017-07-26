@@ -10,7 +10,7 @@ Trie *create_trie(std::string path) {
     std::string word;
     int frequency;
     while(dict >> word >> frequency)
-        root->add_word(word, frequency);
+        root->add_word_compressed(word, frequency);
 
     return root;
 }

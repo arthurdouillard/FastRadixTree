@@ -16,6 +16,7 @@ public:
         , value(value)
     {}
 
+    void add_word_compressed(std::string, uint32_t);
     void add_word(std::string, uint32_t);
 };
 
