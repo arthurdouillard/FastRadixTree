@@ -103,10 +103,9 @@ void* get_struct_end(void* offset)
     return ptr;
 }
 
-// Offset is at the beginning of the struct
+// Returns the i-th child of the node pointed by offset
 void* get_child_at(int index, void* offset) {
-    char* ptr = (char*)offset;
-    ptr = (char*)get_struct_end(offset);
+    char* ptr = (char*)get_struct_end(offset);
 
     while(index > 0)
     {
@@ -125,8 +124,7 @@ void* get_brother(void* offset)
     return end + *bro_offset;
 }
 
-// Offset is at the beginning of the struct
-int get_child_num(void* offset) {
+int get_children_count(void* offset) {
     char* ptr = (char*)offset;
     ptr += sizeof(uint32_t);
     while (*ptr != '\0') {
@@ -136,6 +134,7 @@ int get_child_num(void* offset) {
     return *child_ptr;
 }
 
+// Returns the node value pointed by offset
 std::string get_value(void* offset)
 {
     char* ptr = (char*)offset;
@@ -149,8 +148,14 @@ std::string get_value(void* offset)
     }
     char result [char_len];
     std::memcpy(result, ptr, sizeof(result));
-    return std::string(result);
+    return std::string(ptr);
 }
+
+uint32_t get_frequency(void* offset)
+{
+    uint32_t* ptr = (uint32_t*)offset;
+    return *ptr;
+} 
 
 std::vector<Word>
 search_close_words(void* begin, std::string word, int distance)
@@ -172,18 +177,16 @@ exact_search(void* begin, std::string word)
     bool found;
     size_t initial_length = word.length();
     std::string curr_word("");
-    void* ptr = begin;
+    void* node = begin;
     void* curr_child = nullptr;
-    std::cout << get_child_num(ptr) << '\n' ;
-    ptr = get_child_at(0, ptr);
-    std::cout << get_value(ptr) << '\n';
 
-    /*while(true) {
+    while(true) {
         found = false;
         if (curr_word.length() < initial_length) {
-            for (size_t i = 0; i < get_child_num(ptr); i++) {
-                void* curr_child = get_child_at(i, ptr);
-                int prefix = get_common_prefix(curr_child.value, word);
+            for (size_t i = 0; i < get_children_count(node); i++) {
+                void* curr_child = get_child_at(i, node);
+                std::string child_value = get_value(curr_child);
+                int prefix = get_common_prefix(child_value, word);
 
                 // There's a common prefix
                 if (prefix != 0) {
@@ -198,10 +201,10 @@ exact_search(void* begin, std::string word)
 
         // No child matches, return the result
         if (!found) {
-            Word result(curr_word, node.frequency, 0);
+            Word result(curr_word, get_frequency(node), 0);
             std::vector<Word> vect;
             vect.push_back(Word(result));
             return vect;
         }
-    }*/
+    }
 }
