@@ -56,6 +56,40 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
     }
 }
 
+inline void
+Trie::save_trie(std::string path)
+{
+    std::ofstream stream(path, std::ios::binary);
+    auto offset = std::make_shared<unsigned long>(0);
+
+    this->walk(stream, offset);
+}
+
+inline void
+Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
+{
+    auto len_written = this->write_trie(stream);
+    this->offset = *offset;
+    *offset += len_written;
+
+    for (int i = 0; i < this->children->size(); i++)
+    {
+        this->children->at(i).walk(stream, offset);
+
+        if (i >= 1 && i != this->children->size()-1)
+        {
+            unsigned long left_offset = this->children->at(i-1).offset;
+            unsigned long right_offset = this->children->at(i).offset;
+
+            this->children->at(i).write_offset(stream, left_offset, right_offset);
+        }
+        else if (i == this->children->size()-1)
+            this->children->at(i).write_offset(stream,
+                                               this->children->at(i).offset,
+                                               0);
+    }
+}
+
 inline std::vector<Word>
 Trie::search_close_words(std::string word, int distance) {
     if (distance == 0)

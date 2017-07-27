@@ -11,6 +11,6 @@ int main(int argc, char *argv[]) {
     std::string path(argv[1]);
     std::string bin_path(argv[2]);
     auto* root = create_trie(path);
-    save_trie(root, bin_path);
+    root->save_trie(bin_path);
     return 0;
 }

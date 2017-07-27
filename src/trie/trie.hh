@@ -28,7 +28,7 @@ public:
     std::vector<Word> exact_search(std::string word);
 
     void save_trie(std::string);
-    void walk(Trie, std::ofstream&, std::shared_ptr<unsigned long>&);
+    void walk(std::ofstream&, std::shared_ptr<unsigned long>&);
 
 
     void write_offset(std::ofstream&, unsigned long, unsigned long);

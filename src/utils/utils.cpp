@@ -17,10 +17,6 @@ Trie *create_trie(std::string path) {
 }
 
 
-void save_trie(Trie* t, std::string path) {
-
-}
-
 // FIXME -- For debug
 void indent_print(int indent_level, std::string value) {
     while (indent_level > 0) {
