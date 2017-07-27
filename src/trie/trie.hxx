@@ -78,7 +78,7 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
     {
         this->children->at(i).walk(stream, offset);
 
-     /*   if (i >= 1 && i != this->children->size()-1)
+        if (i >= 1 && i != this->children->size()-1)
         {
             unsigned long left_offset = this->children->at(i-1).offset;
             unsigned long right_offset = this->children->at(i).offset;
@@ -88,7 +88,7 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
         else if (i == this->children->size()-1)
             this->children->at(i).write_offset(stream,
                                                this->children->at(i).offset,
-                                               0);*/
+                                               0);
     }
 }
 
@@ -145,7 +145,9 @@ Trie::write_trie(std::ofstream& stream) {
     char size_buffer[sizeof(size_t)];
     unsigned long default_brother_loc = 0;
     size_t child_size = this->children->size();
-    //total_size += sizeof(frequency) + sizeof(value_char) + sizeof(size_t) ;
+    total_size += sizeof(this->frequency) + sizeof(value_char) + sizeof(size_t) 
+                                          + sizeof(default_brother_loc);
+
     stream.write(reinterpret_cast<const char *>(&this->frequency),
                  sizeof(this->frequency));
     stream.write(value_char, sizeof(value_char));
@@ -154,6 +156,21 @@ Trie::write_trie(std::ofstream& stream) {
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
     return total_size;
+}
+
+inline void 
+Trie::write_offset(std::ofstream& stream, unsigned long offset,
+                   unsigned long next_offset)
+{
+    long base_offset = stream.tellp();
+    long write_offset = offset + sizeof(this->frequency)
+                               + sizeof(this->value.c_str())
+                               + sizeof(size_t);
+    stream.seekp(write_offset);
+    stream.write(reinterpret_cast<const char*>(&next_offset),
+                 sizeof(next_offset));
+    stream.seekp(base_offset);
+
 }
 
 /*int
