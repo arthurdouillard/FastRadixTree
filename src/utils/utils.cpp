@@ -75,9 +75,9 @@ void pretty_print(std::vector<Word> vect) {
     std::cout << "[";
     for (size_t i = 0; i < vect.size(); i++) {
         auto curr_word = vect.at(i);
-        std::cout << "{\"word:\"" << "\"" << curr_word.get_content()<< "\","
-                  << "\"freq:\"" << curr_word.get_frequency() << ","
-                  << "\"distance:\"" << curr_word.get_distance() << "}";
+        std::cout << "{\"word\":" << "\"" << curr_word.get_content()<< "\","
+                  << "\"freq\":" << curr_word.get_frequency() << ","
+                  << "\"distance\":" << curr_word.get_distance() << "}";
         if (i != vect.size() -1)
             std::cout << ',';
     }
