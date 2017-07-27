@@ -142,17 +142,17 @@ inline size_t
 Trie::write_trie(std::ofstream& stream) {
     size_t total_size = 0;
     auto value_char = this->value.c_str();
-    auto brother_size = sizeof(unsigned long);
-    char freq_buffer[sizeof(frequency)];
     char size_buffer[sizeof(size_t)];
-    sprintf(freq_buffer, "%u", this->frequency);
+    unsigned long default_brother_loc = 0;
     sprintf(size_buffer, "%lu", this->children->size());
 
-    total_size += sizeof(frequency) + sizeof(value_char) + sizeof(size_t) + brother_size;
-    stream.write(freq_buffer, sizeof(this->frequency));
+    //total_size += sizeof(frequency) + sizeof(value_char) + sizeof(size_t) ;
+    stream.write(reinterpret_cast<const char *>(&this->frequency),
+                 sizeof(this->frequency));
     stream.write(value_char, sizeof(value_char));
     stream.write(size_buffer, sizeof(size_t));
-    stream.write(0, brother_size);
+    stream.write(reinterpret_cast<const char *>(&default_brother_loc),
+                 sizeof(default_brother_loc));
     return total_size;
 }
 
