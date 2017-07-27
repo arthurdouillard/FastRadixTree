@@ -8,16 +8,16 @@ int main(int argc, char *argv[]) {
         std::cout << "Usage: ./TextMiningApp /path/to/compiled/dict.bin\n";
         exit(134);
     }
-    std::string test("Hello");
-    std::cout << sizeof(uint8_t) << '\n';
-    std::string path(argv[1]);
-    std::string approx;
-    int distance;
-    std::string word;
 
-    /*while (std::cin >> approx >> distance >> word) {
-       auto words = root.search_close_words(word, distance);
+    std::string approx;
+    std::string word;
+    int distance;
+
+    auto mmap_addr = mmap_file(argv[1]);
+    while (std::cin >> approx >> distance >> word) {
+       auto words = search_close_words(mmap_addr, word, distance);
        pretty_print(words);
-    }*/
+    }
+
     return 0;
 }

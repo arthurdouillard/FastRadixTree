@@ -20,6 +20,33 @@ Trie *create_trie(std::string path) {
     return root;
 }
 
+void *mmap_file(char* path)
+{
+    int fd;
+    struct stat stat;
+    void *trie_addr;
+
+    if ((fd = open(path, O_RDONLY)) < 0)
+    {
+        std::cerr << "Invalid input dic." << std::endl;
+        exit(1);
+    }
+
+    if (fstat(fd, &stat) != 0)
+    {
+        std::cerr << "Fstat failed." << std::endl;
+        exit(1);
+    }
+
+    if ((trie_addr = mmap(NULL, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+    {
+        std::cerr << "Mmap failed." << std::endl;
+        exit(1);        
+    }
+
+    return trie_addr;
+}
+
 // FIXME -- For debug
 void indent_print(int indent_level, std::string value) {
     while (indent_level > 0) {
@@ -42,16 +69,16 @@ void print_trie(Trie* t) {
     print_child(*t, 0);
 }
 
-void pretty_print(std::vector<std::shared_ptr<Word>> vect) {
+void pretty_print(std::vector<Word> vect) {
     if (vect.size() == 0)
         return;
 
     std::cout << "[";
     for (size_t i = 0; i < vect.size(); i++) {
         auto curr_word = vect.at(i);
-        std::cout << "{\"word:\"" << "\"" << curr_word->get_content()<< "\","
-                  << "\"freq:\"" << curr_word->get_frequency() << ","
-                  << "\"distance:\"" << curr_word->get_distance() << "}";
+        std::cout << "{\"word:\"" << "\"" << curr_word.get_content()<< "\","
+                  << "\"freq:\"" << curr_word.get_frequency() << ","
+                  << "\"distance:\"" << curr_word.get_distance() << "}";
         if (i != vect.size() -1)
             std::cout << ',';
     }
