@@ -27,7 +27,7 @@ public:
     std::vector<Word> exact_search(std::string word);
 
 private:
-    int write_trie(std::ofstream& stream, Trie& trie);
+    size_t write_trie(std::ofstream& stream);
 };
 
 # include "trie.hxx"
