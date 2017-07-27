@@ -1,5 +1,6 @@
 #include <iostream>
 #include "utils.hh"
+#include "../word/word.hh"
 
 
 Trie *create_trie(std::string path) {
@@ -54,4 +55,20 @@ void print_child(Trie* t, int indent_level) {
 
 void print_trie(Trie* t) {
     print_child(t, 0);
+}
+
+void pretty_print(std::vector<std::shared_ptr<Word>> vect) {
+    if (vect.size() == 0)
+        return;
+    
+    std::cout << "[";
+    for (size_t i = 0; i < vect.size(); i++) {
+        auto curr_word = vect.at(i);
+        std::cout << "{\"word:\"" << "\"" << curr_word->get_content()<< "\","
+                  << "\"freq:\"" << curr_word->get_frequency() << ","
+                  << "\"distance:\"" << curr_word->get_distance() << "}";
+        if (i != vect.size() -1)
+            std::cout << ',';
+    }
+    std::cout << "]\n";
 }

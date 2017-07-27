@@ -1,7 +1,5 @@
 #pragma once
 
-#include "trie.hh"
-
 inline size_t
 get_common_prefix(std::string& w1, std::string& w2)
 {
@@ -57,3 +55,65 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
         }
     }
 }
+
+inline std::vector<std::shared_ptr<Word>>
+Trie::search_close_words(std::string word, int distance) {
+    if (distance == 0)
+        return this->exact_search(word);
+}
+
+inline std::vector<std::shared_ptr<Word>>
+Trie::exact_search(std::string word) {
+    bool found;
+    auto node = this;
+    std::string curr_word("");
+
+    while(true) {
+        std::cout << "Curr node: " << node->value
+                  << " child size: " << node->children->size()
+                  << " curr word: " << curr_word;
+        found = false;
+        for (size_t i = 0; i < node->children->size(); i++) {
+            auto curr_child = node->children->at(i);
+            std::cout << "child value: " << curr_child->value << '\n';
+            int prefix = get_common_prefix(curr_child->value, word);
+
+            // There's a common prefix
+            if (prefix != 0) {
+                node = curr_child.get();
+                curr_word += word.substr(0, prefix);
+                word = word.substr(prefix);
+                std::cout << "Step on child\n";
+                found = true;
+                break;
+            }
+        }
+
+        // No child matches, return the result
+        if (!found) {
+            std::cout << "Return result: " << curr_word << '\n';
+            Word result(curr_word, node->frequency, 0);
+            std::vector<std::shared_ptr<Word>> vect;
+            vect.push_back(std::make_shared<Word>(result));
+            return vect;
+        }
+
+    }
+}
+
+/*int
+Trie::dist_search(Trie* node, std::string word, std::string curr_word, int curr_dist, int max_dist) {
+    if (curr_dist > max_dist) {
+        return curr_dist;
+    }
+
+    int res = 10, mdist = -1, sub = -1, trans = -1, del = -1;
+
+    if (node->frequency == 0) {
+        res = word.length();
+    }
+
+    if (curr_dist + 1 <= max_dist && word.length() > 0) {
+        dist_search()
+    }
+}*/
