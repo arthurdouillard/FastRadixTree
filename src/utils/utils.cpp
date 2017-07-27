@@ -102,13 +102,13 @@ void* get_child(void* offset) {
 }
 
 // Offset is at the beginning of the struct
-size_t get_child_num(void* offset) {
+int* get_child_num(void* offset) {
     char* ptr = (char*)offset;
     ptr += sizeof(uint32_t);
     while (*ptr != '\0') {
         ptr++;
     }
-    return (size_t)ptr;
+    return (int*)ptr;
 }
 
 std::vector<Word>
@@ -125,7 +125,7 @@ exact_search(void* begin, std::string word)
     size_t initial_length = word.length();
     std::string curr_word("");
     void* ptr = begin;
-    std::cout << get_child_num(ptr);
+    std::cout << *get_child_num(ptr) << '\n' ;
 
     /*while(true) {
         found = false;
