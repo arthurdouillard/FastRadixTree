@@ -1,5 +1,5 @@
 CC=clang++
-CXXFLAGS=-std=c++11 -Wall -Wextra
+CXXFLAGS=-std=c++11 -Wall -Wextra -O3
 LDFLAGS= -lboost_serialization
 
 APP=TextMiningApp
