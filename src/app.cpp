@@ -9,8 +9,15 @@ int main(int argc, char *argv[]) {
         exit(134);
     }
     std::string path(argv[1]);
+    std::string approx;
+    int distance;
+    std::string word;
+
     auto root = load_trie(path);
 
-
+    while (std::cin >> approx >> distance >> word) {
+       auto words = root.search_close_words(word, distance);
+       pretty_print(words);
+    }
     return 0;
 }

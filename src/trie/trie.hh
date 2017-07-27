@@ -10,6 +10,9 @@
 #include <boost/serialization/vector.hpp>
 
 
+#include "../word/word.hh"
+
+
 class Trie
 {
 public:
@@ -26,6 +29,8 @@ public:
     }
 
     void add_word_compressed(std::string, uint32_t);
+    std::vector<std::shared_ptr<Word>> search_close_words(std::string word, int distance);
+    std::vector<std::shared_ptr<Word>> exact_search(std::string word);
 
 private:
     friend class boost::serialization::access;
