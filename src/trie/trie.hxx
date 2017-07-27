@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 inline size_t
 get_common_prefix(std::string& w1, std::string& w2)
 {
@@ -130,6 +132,28 @@ Trie::exact_search(std::string word) {
         }
 
     }
+}
+
+// freq is uint32_t
+// value has variable length
+// child number is size_t
+// offsets are unsigned longs
+inline size_t
+Trie::write_trie(std::ofstream& stream) {
+    size_t total_size = 0;
+    auto value = this->value.c_str();
+    auto brother_size = sizeof(unsigned long);
+    char freq_buffer[sizeof(frequency)];
+    char size_buffer[sizeof(size_t)];
+    sprintf(freq_buffer, "%u", this->frequency);
+    sprintf(size_buffer, "%lu", this->children->size());
+
+    total_size += sizeof(frequency) + sizeof(value) + sizeof(size_t) + brother_size;
+    stream.write(freq_buffer, sizeof(this->frequency));
+    stream.write(value, sizeof(value));
+    stream.write(size_buffer, sizeof(size_t));
+    stream.write(0, brother_size);
+    return total_size;
 }
 
 /*int

@@ -2,7 +2,6 @@
 #include "utils.hh"
 #include "../word/word.hh"
 
-
 Trie *create_trie(std::string path) {
     std::ifstream dict(path);
 
@@ -15,7 +14,6 @@ Trie *create_trie(std::string path) {
 
     return root;
 }
-
 
 // FIXME -- For debug
 void indent_print(int indent_level, std::string value) {
