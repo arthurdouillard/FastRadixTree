@@ -100,7 +100,6 @@ inline size_t
 Trie::write_trie(std::ofstream& stream) {
     size_t total_size = 0;
     auto value_char = this->value.c_str();
-    char size_buffer[sizeof(size_t)];
     unsigned long default_brother_loc = 0;
     int child_size = this->children->size();
     total_size += sizeof(this->frequency) + sizeof(value_char) + sizeof(size_t) 
