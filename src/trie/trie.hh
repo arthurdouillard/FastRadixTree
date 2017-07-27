@@ -13,6 +13,7 @@ public:
     uint32_t frequency;
     std::string value;
     std::vector<Trie> *children;
+    unsigned long offset;
 
     Trie() {}
     Trie(uint32_t frequency, std::string value)
@@ -26,7 +27,12 @@ public:
     std::vector<Word> search_close_words(std::string word, int distance);
     std::vector<Word> exact_search(std::string word);
 
-    size_t write_trie(std::ofstream& stream);
+    void save_trie(std::string);
+    void walk(Trie, std::ofstream&, std::shared_ptr<unsigned long>&);
+
+
+    void write_offset(std::ofstream&, unsigned long, unsigned long);
+    size_t write_trie(std::ofstream&);
 };
 
 # include "trie.hxx"
