@@ -83,13 +83,23 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
             unsigned long left_offset = this->children->at(i-1).offset;
             unsigned long right_offset = this->children->at(i).offset;
 
-            this->children->at(i).write_offset(stream, left_offset, right_offset);
+            this->children->at(i-1).write_offset(stream, left_offset, right_offset);
         }
         else if (i == this->children->size()-1)
             this->children->at(i).write_offset(stream,
                                                this->children->at(i).offset,
                                                0);
     }
+
+    for (int i = 0; i < this->children->size(); i++)
+    {
+        auto cur_offset = this->children->at(i).offset;
+        auto bro_offset = (i == this->children->size()-1) ? 0 : this->children->at(i+1).offset;
+
+        this->children->at(i).write_offset(stream, cur_offset, bro_offset);
+    }
+
+
 }
 
 // freq is uint32_t
@@ -121,7 +131,7 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
 {
     long base_offset = stream.tellp();
     long write_offset = offset + sizeof(uint32_t) * 2
-                               + sizeof(this->value.c_str());
+                               + sizeof(this->value.size());
     stream.seekp(write_offset);
     stream.write(reinterpret_cast<const char*>(&next_offset),
                  sizeof(next_offset));
