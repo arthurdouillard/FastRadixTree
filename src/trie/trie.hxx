@@ -109,7 +109,7 @@ Trie::write_trie(std::ofstream& stream) {
                  sizeof(this->frequency));
     stream.write(reinterpret_cast<const char*>(&child_size)
                 , sizeof(uint32_t));
-    stream.write(value_char, sizeof(value_char));
+    stream.write(value_char, this->value.size());
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
     return total_size;
@@ -120,7 +120,7 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
                    unsigned long next_offset)
 {
     long base_offset = stream.tellp();
-    long write_offset = offset + sizeof(size_t) * 2
+    long write_offset = offset + sizeof(uint32_t) * 2
                                + sizeof(this->value.c_str());
     stream.seekp(write_offset);
     stream.write(reinterpret_cast<const char*>(&next_offset),

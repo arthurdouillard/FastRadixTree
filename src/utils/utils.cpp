@@ -174,13 +174,14 @@ exact_search(void* begin, std::string word)
         found = false;
         if (curr_word.length() < initial_length) {
             std::cout << "Curr node: " << get_value(node)
-                      << " num childs: " << get_children_count(node);
+                      << " num childs: " << get_children_count(node) << std::endl;
 
             for (size_t i = 0; i < get_children_count(node); i++) {
                 void* curr_child = get_child_at(i, node);
                 std::string child_value = get_value(curr_child);
-                std::cout << " child value: " << child_value << '\n';
+                std::cout << "- child value: <" << child_value << ">\n";
                 int prefix = get_common_prefix(child_value, word);
+                std::cout << "--- " << prefix << std::endl;
 
                 // There's a common prefix
                 if (prefix != 0) {
