@@ -120,9 +120,8 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
                    unsigned long next_offset)
 {
     long base_offset = stream.tellp();
-    long write_offset = offset + sizeof(this->frequency)
-                               + sizeof(this->value.c_str())
-                               + sizeof(size_t);
+    long write_offset = offset + sizeof(size_t) * 2
+                               + sizeof(this->value.c_str());
     stream.seekp(write_offset);
     stream.write(reinterpret_cast<const char*>(&next_offset),
                  sizeof(next_offset));
