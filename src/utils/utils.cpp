@@ -2,6 +2,8 @@
 #include "utils.hh"
 #include "../word/word.hh"
 
+#define LONG_SIZE sizeof(unsigned long)
+
 Trie *create_trie(std::string path) {
     std::ifstream dict(path);
 
@@ -87,8 +89,8 @@ void pretty_print(std::vector<Word> vect) {
     std::cout << "]\n";
 }
 
-// Offset is at the beginning of the struct
-void* get_child(void* offset) {
+void* get_struct_end(void* offset)
+{
     char* ptr = (char*)offset;
     // Jump at the end of the frequency
     // Go to the end of the string
@@ -97,18 +99,50 @@ void* get_child(void* offset) {
     while (*ptr != '\0') {
         ptr++;
     }
-    ptr += sizeof(unsigned long);
+    ptr += LONG_SIZE;
     return ptr;
 }
 
 // Offset is at the beginning of the struct
-int* get_child_num(void* offset) {
+void* get_child_at(int index, void* offset) {
+    char* ptr = (char*)offset;
+    ptr = (char*)get_struct_end(offset);
+
+    while(index > 0)
+    {
+        ptr = (char*)get_struct_end(ptr);
+        unsigned long* next_offset = (unsigned long*)(ptr - LONG_SIZE);
+        ptr += *next_offset;
+        index--;
+    }
+    return ptr;
+}
+
+// Offset is at the beginning of the struct
+int get_child_num(void* offset) {
     char* ptr = (char*)offset;
     ptr += sizeof(uint32_t);
     while (*ptr != '\0') {
         ptr++;
     }
-    return (int*)ptr;
+    int* child_ptr = (int*)ptr;
+    return *child_ptr;
+}
+
+std::string get_value(void* offset)
+{
+    char* ptr = (char*)offset;
+    char* end_ptr = ptr;
+    ptr += sizeof(uint32_t);
+    int char_len = 0;
+    while(*end_ptr != '\0') 
+    {
+        end_ptr++;
+        char_len++;
+    }
+    char result [char_len];
+    std::memcpy(result, ptr, sizeof(result));
+    return std::string(result);
 }
 
 std::vector<Word>
@@ -125,13 +159,16 @@ exact_search(void* begin, std::string word)
     size_t initial_length = word.length();
     std::string curr_word("");
     void* ptr = begin;
-    std::cout << *get_child_num(ptr) << '\n' ;
+    void* curr_child = nullptr;
+    std::cout << get_child_num(ptr) << '\n' ;
+    ptr = get_child_at(0, ptr);
+    std::cout << get_value(ptr) << '\n';
 
     /*while(true) {
         found = false;
         if (curr_word.length() < initial_length) {
-            for (size_t i = 0; i < node.children->size(); i++) {
-                auto curr_child = node.children->at(i);
+            for (size_t i = 0; i < get_child_num(ptr); i++) {
+                void* curr_child = get_child_at(i, ptr);
                 int prefix = get_common_prefix(curr_child.value, word);
 
                 // There's a common prefix
