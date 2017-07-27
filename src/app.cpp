@@ -10,5 +10,7 @@ int main(int argc, char *argv[]) {
     }
     std::string path(argv[1]);
     auto root = load_trie(path);
+
+
     return 0;
 }

@@ -8,6 +8,7 @@ Trie *create_trie(std::string path) {
     auto* root = new Trie(0, "");
     std::string word;
     int frequency;
+
     while(dict >> word >> frequency)
         root->add_word_compressed(word, frequency);
 

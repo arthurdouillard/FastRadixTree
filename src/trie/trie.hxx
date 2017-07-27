@@ -20,13 +20,13 @@ inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency)
 {   
     auto node = this;
-    bool has_inserted = false;
+    bool final_node = true;
     size_t prefix;
 
     while (true) {
         for (size_t i = 0; i < node->children->size(); i++)
         {
-            has_inserted = false;
+            final_node = true;
             auto curr_child = node->children->at(i);
 
             prefix = get_common_prefix(curr_child->value, word);
@@ -42,14 +42,14 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
                 new_child->children->push_back(curr_child);
                 node->children->at(i) = new_child;
                 node = new_child.get();
-                has_inserted = true;
             }
-
+            
+            final_node = false;
             word = word.substr(prefix);
             break;
         }
 
-        if (!has_inserted)
+        if (final_node || !node->children->size())
         {
             auto child = std::make_shared<Trie>(frequency, word);
             node->children->push_back(child);
