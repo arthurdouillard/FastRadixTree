@@ -78,7 +78,7 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
     {
         this->children->at(i).walk(stream, offset);
 
-        if (i >= 1 && i != this->children->size()-1)
+     /*   if (i >= 1 && i != this->children->size()-1)
         {
             unsigned long left_offset = this->children->at(i-1).offset;
             unsigned long right_offset = this->children->at(i).offset;
@@ -88,7 +88,7 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
         else if (i == this->children->size()-1)
             this->children->at(i).write_offset(stream,
                                                this->children->at(i).offset,
-                                               0);
+                                               0);*/
     }
 }
 
@@ -141,16 +141,16 @@ Trie::exact_search(std::string word) {
 inline size_t
 Trie::write_trie(std::ofstream& stream) {
     size_t total_size = 0;
-    auto value = this->value.c_str();
+    auto value_char = this->value.c_str();
     auto brother_size = sizeof(unsigned long);
     char freq_buffer[sizeof(frequency)];
     char size_buffer[sizeof(size_t)];
     sprintf(freq_buffer, "%u", this->frequency);
     sprintf(size_buffer, "%lu", this->children->size());
 
-    total_size += sizeof(frequency) + sizeof(value) + sizeof(size_t) + brother_size;
+    total_size += sizeof(frequency) + sizeof(value_char) + sizeof(size_t) + brother_size;
     stream.write(freq_buffer, sizeof(this->frequency));
-    stream.write(value, sizeof(value));
+    stream.write(value_char, sizeof(value_char));
     stream.write(size_buffer, sizeof(size_t));
     stream.write(0, brother_size);
     return total_size;

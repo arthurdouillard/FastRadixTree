@@ -9,8 +9,13 @@ Trie *create_trie(std::string path) {
     std::string word;
     int frequency;
 
+    int i = 0;
     while(dict >> word >> frequency)
+    {
+        if (i++ > 10)
+            break;
         root->add_word_compressed(word, frequency);
+    }
 
     return root;
 }
