@@ -92,48 +92,6 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
     }
 }
 
-inline std::vector<Word>
-Trie::search_close_words(std::string word, int distance) {
-    if (distance == 0)
-        return this->exact_search(word);
-}
-
-inline std::vector<Word>
-Trie::exact_search(std::string word) {
-    bool found;
-    size_t initial_length = word.length();
-    auto node = *this;
-    std::string curr_word("");
-
-    while(true) {
-        found = false;
-        if (curr_word.length() < initial_length) {
-            for (size_t i = 0; i < node.children->size(); i++) {
-                auto curr_child = node.children->at(i);
-                int prefix = get_common_prefix(curr_child.value, word);
-
-                // There's a common prefix
-                if (prefix != 0) {
-                    node = curr_child;
-                    curr_word += word.substr(0, prefix);
-                    word = word.substr(prefix);
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        // No child matches, return the result
-        if (!found) {
-            Word result(curr_word, node.frequency, 0);
-            std::vector<Word> vect;
-            vect.push_back(Word(result));
-            return vect;
-        }
-
-    }
-}
-
 // freq is uint32_t
 // value has variable length
 // child number is size_t

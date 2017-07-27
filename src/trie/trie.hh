@@ -24,12 +24,9 @@ public:
     }
 
     void add_word_compressed(std::string, uint32_t);
-    std::vector<Word> search_close_words(std::string word, int distance);
-    std::vector<Word> exact_search(std::string word);
 
     void save_trie(std::string);
     void walk(std::ofstream&, std::shared_ptr<unsigned long>&);
-
 
     void write_offset(std::ofstream&, unsigned long, unsigned long);
     size_t write_trie(std::ofstream&);

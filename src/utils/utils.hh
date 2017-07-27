@@ -16,3 +16,4 @@ void print_child(Trie* t, int indent_level);
 void indent_print(int indent_level, std::string value);
 void pretty_print(std::vector<Word> vect);
 std::vector<Word> search_close_words(void* begin, std::string word, int distance);
+std::vector<Word> exact_search(void* begin, std::string word);

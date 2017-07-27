@@ -56,7 +56,8 @@ void indent_print(int indent_level, std::string value) {
     std::cout << value << '\n';
 }
 
-void print_child(Trie node, int indent_level) {
+void print_child(Trie node, int indent_level)
+{
     indent_print(indent_level, node.value);
 
     for (size_t i = 0; i < node.children->size(); i++) {
@@ -65,7 +66,8 @@ void print_child(Trie node, int indent_level) {
     }
 }
 
-void print_trie(Trie* t) {
+void print_trie(Trie* t)
+{
     print_child(*t, 0);
 }
 
@@ -83,4 +85,72 @@ void pretty_print(std::vector<Word> vect) {
             std::cout << ',';
     }
     std::cout << "]\n";
+}
+
+// Offset is at the beginning of the struct
+void* get_child(void* offset) {
+    char* ptr = (char*)offset;
+    // Jump at the end of the frequency
+    // Go to the end of the string
+    // Jump to the end of the brother's offset
+    ptr += sizeof(uint32_t);
+    while (*ptr != '\0') {
+        ptr++;
+    }
+    ptr += sizeof(unsigned long);
+    return ptr;
+}
+
+// Offset is at the beginning of the struct
+size_t get_child_num(void* offset) {
+    char* ptr = (char*)offset;
+    ptr += sizeof(uint32_t);
+    while (*ptr != '\0') {
+        ptr++;
+    }
+    return (size_t)ptr;
+}
+
+std::vector<Word>
+search_close_words(void* begin, std::string word, int distance)
+{
+    if (distance == 0)
+        return exact_search(begin, word);
+}
+
+std::vector<Word>
+exact_search(void* begin, std::string word)
+{
+    bool found;
+    size_t initial_length = word.length();
+    std::string curr_word("");
+    void* ptr = begin;
+    std::cout << get_child_num(ptr);
+
+    /*while(true) {
+        found = false;
+        if (curr_word.length() < initial_length) {
+            for (size_t i = 0; i < node.children->size(); i++) {
+                auto curr_child = node.children->at(i);
+                int prefix = get_common_prefix(curr_child.value, word);
+
+                // There's a common prefix
+                if (prefix != 0) {
+                    node = curr_child;
+                    curr_word += word.substr(0, prefix);
+                    word = word.substr(prefix);
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        // No child matches, return the result
+        if (!found) {
+            Word result(curr_word, node.frequency, 0);
+            std::vector<Word> vect;
+            vect.push_back(Word(result));
+            return vect;
+        }
+    }*/
 }
