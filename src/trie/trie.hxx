@@ -65,33 +65,37 @@ Trie::search_close_words(std::string word, int distance) {
 inline std::vector<std::shared_ptr<Word>>
 Trie::exact_search(std::string word) {
     bool found;
+    size_t initial_length = word.length();
     auto node = this;
     std::string curr_word("");
 
     while(true) {
         std::cout << "Curr node: " << node->value
-                  << " child size: " << node->children->size()
-                  << " curr word: " << curr_word;
+                  << " frequency: " << node->frequency
+                  << " word: " << word 
+                  << " curr_word: " << curr_word;
         found = false;
-        for (size_t i = 0; i < node->children->size(); i++) {
-            auto curr_child = node->children->at(i);
-            std::cout << "child value: " << curr_child->value << '\n';
-            int prefix = get_common_prefix(curr_child->value, word);
+        if (curr_word.length() < initial_length) {
+            for (size_t i = 0; i < node->children->size(); i++) {
+                auto curr_child = node->children->at(i);
+                std::cout << " child_value: " << curr_child->value << '\n';
+                int prefix = get_common_prefix(curr_child->value, word);
 
-            // There's a common prefix
-            if (prefix != 0) {
-                node = curr_child.get();
-                curr_word += word.substr(0, prefix);
-                word = word.substr(prefix);
-                std::cout << "Step on child\n";
-                found = true;
-                break;
+                // There's a common prefix
+                if (prefix != 0) {
+                    node = curr_child.get();
+                    curr_word += word.substr(0, prefix);
+                    word = word.substr(prefix);
+                    std::cout << "Step on child\n";
+                    found = true;
+                    break;
+                }
             }
         }
 
         // No child matches, return the result
         if (!found) {
-            std::cout << "Return result: " << curr_word << '\n';
+            std::cout << " Return result: " << curr_word << '\n';
             Word result(curr_word, node->frequency, 0);
             std::vector<std::shared_ptr<Word>> vect;
             vect.push_back(std::make_shared<Word>(result));
