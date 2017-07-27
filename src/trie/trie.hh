@@ -29,8 +29,8 @@ public:
     }
 
     void add_word_compressed(std::string, uint32_t);
-    std::vector<std::shared_ptr<Word>> search_close_words(std::string word, int distance);
-    std::vector<std::shared_ptr<Word>> exact_search(std::string word);
+    std::vector<Word> search_close_words(std::string word, int distance);
+    std::vector<Word> exact_search(std::string word);
 
 private:
     int write_trie(std::ofstream& stream, Trie& trie);
