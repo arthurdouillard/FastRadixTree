@@ -26,7 +26,6 @@ public:
     std::vector<Word> search_close_words(std::string word, int distance);
     std::vector<Word> exact_search(std::string word);
 
-private:
     size_t write_trie(std::ofstream& stream);
 };
 
