@@ -43,24 +43,23 @@ void indent_print(int indent_level, std::string value) {
     std::cout << value << '\n';
 }
 
-void print_child(Trie* t, int indent_level) {
-    auto node = t;
-    indent_print(indent_level, t->value);
+void print_child(Trie node, int indent_level) {
+    indent_print(indent_level, node.value);
 
-    for (size_t i = 0; i < node->children->size(); i++) {
-        auto curr_child = node->children->at(i);
-        print_child(curr_child.get(), ++indent_level);
+    for (size_t i = 0; i < node.children->size(); i++) {
+        auto curr_child = node.children->at(i);
+        print_child(curr_child, ++indent_level);
     }
 }
 
 void print_trie(Trie* t) {
-    print_child(t, 0);
+    print_child(*t, 0);
 }
 
 void pretty_print(std::vector<std::shared_ptr<Word>> vect) {
     if (vect.size() == 0)
         return;
-    
+
     std::cout << "[";
     for (size_t i = 0; i < vect.size(); i++) {
         auto curr_word = vect.at(i);

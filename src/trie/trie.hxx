@@ -17,29 +17,29 @@ get_common_prefix(std::string& w1, std::string& w2)
 inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency)
 {   
-    auto node = this;
+    auto node = *this;
     bool final_node = true;
     size_t prefix;
 
     while (true) {
-        for (size_t i = 0; i < node->children->size(); i++)
+        for (size_t i = 0; i < node.children->size(); i++)
         {
             final_node = true;
-            auto curr_child = node->children->at(i);
+            auto curr_child = node.children->at(i);
 
-            prefix = get_common_prefix(curr_child->value, word);
+            prefix = get_common_prefix(curr_child.value, word);
             if (prefix == 0)
                 continue;
 
-            if (prefix == node->children->at(i)->value.length())
-                node = node->children->at(i).get();
+            if (prefix == node.children->at(i).value.length())
+                node = node.children->at(i);
             else
             {
-                curr_child->value = curr_child->value.substr(prefix);
-                auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
-                new_child->children->push_back(curr_child);
-                node->children->at(i) = new_child;
-                node = new_child.get();
+                curr_child.value = curr_child.value.substr(prefix);
+                auto new_child = Trie(0, word.substr(0, prefix));
+                new_child.children->push_back(curr_child);
+                node.children->at(i) = new_child;
+                node = new_child;
             }
             
             final_node = false;
@@ -47,10 +47,10 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
             break;
         }
 
-        if (final_node || !node->children->size())
+        if (final_node || !node.children->size())
         {
-            auto child = std::make_shared<Trie>(frequency, word);
-            node->children->push_back(child);
+            auto child = Trie(frequency, word);
+            node.children->push_back(child);
             break;
         }
     }
