@@ -2,7 +2,6 @@
 
 #include "trie.hh"
 
-
 inline size_t
 get_common_prefix(std::string& w1, std::string& w2)
 {
@@ -58,33 +57,3 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
         }
     }
 }
-
-/*
-inline void
-Trie::add_word(std::string word, uint32_t frequency)
-{
-    auto letter = word.substr(0, 1);
-
-    int i = -1;
-    for (size_t j = 0; j < this->children.size(); j++)
-    {
-        if (this->children[j]->value == letter)
-        {
-            i = j;
-            break;
-        }
-    }
-
-    if (i == -1) 
-    {
-        // Letter not present among children.
-        auto trie = std::make_shared<Trie>(0, letter, std::vector<std::shared_ptr<Trie>>());
-        this->children.push_back(trie);
-        i = this->children.size() - 1;
-    }
-
-    if (word.size() == 1)
-        this->children[i]->frequency = frequency;
-    else
-        this->children[i]->add_word(word.substr(1, word.size()-1), frequency);
-}*/
