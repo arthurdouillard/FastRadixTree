@@ -70,15 +70,10 @@ Trie::exact_search(std::string word) {
     std::string curr_word("");
 
     while(true) {
-        std::cout << "Curr node: " << node.value
-                  << " frequency: " << node.frequency
-                  << " word: " << word 
-                  << " curr_word: " << curr_word;
         found = false;
         if (curr_word.length() < initial_length) {
             for (size_t i = 0; i < node.children->size(); i++) {
                 auto curr_child = node.children->at(i);
-                std::cout << " child_value: " << curr_child.value << '\n';
                 int prefix = get_common_prefix(curr_child.value, word);
 
                 // There's a common prefix
@@ -86,7 +81,6 @@ Trie::exact_search(std::string word) {
                     node = curr_child;
                     curr_word += word.substr(0, prefix);
                     word = word.substr(prefix);
-                    std::cout << "Step on child\n";
                     found = true;
                     break;
                 }
@@ -95,7 +89,6 @@ Trie::exact_search(std::string word) {
 
         // No child matches, return the result
         if (!found) {
-            std::cout << " Return result: " << curr_word << '\n';
             Word result(curr_word, node.frequency, 0);
             std::vector<Word> vect;
             vect.push_back(Word(result));
