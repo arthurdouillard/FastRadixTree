@@ -7,10 +7,9 @@
 Trie *create_trie(std::string path) {
     std::ifstream dict(path);
 
-    auto* root = new Trie(0, "");
+    auto* root = new Trie(1000, "hello");
     std::string word;
     int frequency;
-
     while(dict >> word >> frequency)
         root->add_word_compressed(word, frequency);
 
@@ -89,8 +88,9 @@ void* get_struct_end(void* offset)
     char* ptr = (char*)offset;
     // Jump at the end of the frequency
     // Go to the end of the string
+    // Jump children count
     // Jump to the end of the brother's offset
-    ptr += sizeof(uint32_t);
+    ptr += sizeof(uint32_t) * 2;
     while (*ptr != '\0') {
         ptr++;
     }
@@ -119,13 +119,10 @@ void* get_brother(void* offset)
     return end + *bro_offset;
 }
 
-int get_children_count(void* offset) {
+uint32_t get_children_count(void* offset) {
     char* ptr = (char*)offset;
     ptr += sizeof(uint32_t);
-    while (*ptr != '\0') {
-        ptr++;
-    }
-    int* child_ptr = (int*)ptr;
+    uint32_t* child_ptr = (uint32_t*)ptr;
     return *child_ptr;
 }
 
@@ -134,7 +131,7 @@ std::string get_value(void* offset)
 {
     char* ptr = (char*)offset;
     char* end_ptr = ptr;
-    ptr += sizeof(uint32_t);
+    ptr += sizeof(uint32_t) * 2;
     int char_len = 0;
     while(*end_ptr != '\0') 
     {
@@ -198,7 +195,7 @@ exact_search(void* begin, std::string word)
 
         // No child matches, return the result
         if (!found) {
-            std::cout << "Return node: " << curr_word  << '\n';
+            std::cout << " Return node: " << curr_word  << '\n';
             Word result(curr_word, get_frequency(node), 0);
             std::vector<Word> vect;
             vect.push_back(Word(result));

@@ -101,15 +101,15 @@ Trie::write_trie(std::ofstream& stream) {
     size_t total_size = 0;
     auto value_char = this->value.c_str();
     unsigned long default_brother_loc = 0;
-    int child_size = this->children->size();
+    uint32_t child_size = this->children->size();
     total_size += sizeof(this->frequency) + sizeof(value_char) + sizeof(size_t) 
                                           + sizeof(default_brother_loc);
 
     stream.write(reinterpret_cast<const char *>(&this->frequency),
                  sizeof(this->frequency));
-    stream.write(value_char, sizeof(value_char));
     stream.write(reinterpret_cast<const char*>(&child_size)
-                , sizeof(int));
+                , sizeof(uint32_t));
+    stream.write(value_char, sizeof(value_char));
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
     return total_size;
