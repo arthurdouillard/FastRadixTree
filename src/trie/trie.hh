@@ -4,12 +4,6 @@
 #include <string>
 #include <fstream>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/vector.hpp>
-
-
 #include "../word/word.hh"
 
 
@@ -34,15 +28,6 @@ public:
 
 private:
     int write_trie(std::ofstream& stream, Trie& trie);
-
-    friend class boost::serialization::access;
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-            ar & frequency;
-            ar & value;
-            ar & children;
-    }
 };
 
 # include "trie.hxx"

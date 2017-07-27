@@ -1,6 +1,5 @@
 CC=clang++
 CXXFLAGS=-std=c++11 -Wall -Wextra -O3
-LDFLAGS= -lboost_serialization
 
 APP=TextMiningApp
 CMP=TextMiningCompiler
@@ -15,11 +14,11 @@ all: app compiler
 
 
 app:
-	${CC} ${CXXFLAGS} ${SRC} ${APPCC} ${LDFLAGS} -o ${APP}
+	${CC} ${CXXFLAGS} ${SRC} ${APPCC} -o ${APP}
 
 
 compiler:
-	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} ${LDFLAGS} -o ${CMP}
+	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} -o ${CMP}
 
 
 .PHONY: clean

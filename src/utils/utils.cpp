@@ -16,22 +16,9 @@ Trie *create_trie(std::string path) {
     return root;
 }
 
-Trie load_trie(std::string path) {
-    Trie t;
-    {
-        std::ifstream ifs(path);
-        boost::archive::text_iarchive ia(ifs);
-        ia >> t;
-    }
-    return t;
-}
 
 void save_trie(Trie* t, std::string path) {
-    {
-        std::ofstream ofs(path);
-        boost::archive::text_oarchive oa(ofs); 
-        oa << *t;
-    }
+
 }
 
 // FIXME -- For debug
