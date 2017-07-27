@@ -118,6 +118,13 @@ void* get_child_at(int index, void* offset) {
     return ptr;
 }
 
+void* get_brother(void* offset)
+{
+    char* end = (char*)get_struct_end(offset);
+    unsigned long* bro_offset = (unsigned long*)(end - LONG_SIZE);
+    return end + *bro_offset;
+}
+
 // Offset is at the beginning of the struct
 int get_child_num(void* offset) {
     char* ptr = (char*)offset;
@@ -150,6 +157,13 @@ search_close_words(void* begin, std::string word, int distance)
 {
     if (distance == 0)
         return exact_search(begin, word);
+
+    auto words = std::make_shared<std::vector<Word>>();
+    
+    // Deletion:
+   // compute_distance();
+
+
 }
 
 std::vector<Word>
