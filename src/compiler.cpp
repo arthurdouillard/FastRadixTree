@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        std::cout << "Usage: ./TextMiningCompiler /path/to/word/freq.txt /path/to/output/dict.bin");
+        std::cout << "Usage: ./TextMiningCompiler /path/to/word/freq.txt /path/to/output/dict.bin\n";
         exit(134);
     }
 
