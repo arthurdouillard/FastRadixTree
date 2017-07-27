@@ -15,11 +15,11 @@ all: app compiler
 
 
 app:
-	${CC} ${CXXFLAGS} ${SRC} ${APPCC} ${LDFLAGS} -o ${APP}
+	${CC} ${CXXFLAGS} -g ${SRC} ${APPCC} ${LDFLAGS} -o ${APP}
 
 
 compiler:
-	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} ${LDFLAGS} -o ${CMP}
+	${CC} ${CXXFLAGS} -g ${SRC} ${CMPCC} ${LDFLAGS} -o ${CMP}
 
 
 .PHONY: clean

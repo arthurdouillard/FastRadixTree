@@ -14,10 +14,10 @@ Trie *create_trie(std::string path) {
     return root;
 }
 
-Trie* load_trie(std::string path) {
+Trie load_trie(std::string path) {
     Trie t;
-    std::ifstream ifs(path);
     {
+        std::ifstream ifs(path);
         boost::archive::text_iarchive ia(ifs);
         ia >> t;
     }
@@ -25,8 +25,8 @@ Trie* load_trie(std::string path) {
 }
 
 void save_trie(Trie* t, std::string path) {
-    std::ofstream ofs(path);
     {
+        std::ofstream ofs(path);
         boost::archive::text_oarchive oa(ofs); 
         oa << *t;
     }
@@ -47,7 +47,7 @@ void print_child(Trie* t, int indent_level) {
 
     for (size_t i = 0; i < node->children->size(); i++) {
         auto curr_child = node->children->at(i);
-        print_child(curr_child.get(), indent_level++);
+        print_child(curr_child.get(), ++indent_level);
     }
 }
 

@@ -6,6 +6,8 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 
 
 class Trie
@@ -24,9 +26,6 @@ public:
     }
 
     void add_word_compressed(std::string, uint32_t);
-    void save_trie(Trie* t, std::string path);
-    Trie* load_trie(std::string path);
-
 
 private:
     friend class boost::serialization::access;
@@ -35,10 +34,7 @@ private:
     void serialize(Archive & ar, const unsigned int version) {
             ar & frequency;
             ar & value;
-            for (size_t i = 0; i < children->size(); i++) {
-                auto curr_node = children->at(i);
-                ar & *curr_node;
-            }
+            ar & children;
     }
 };
 
