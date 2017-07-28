@@ -12,5 +12,84 @@ Language & dependencies
 Language:
     * C++
 
-Libraries:
-    * Boost
+No extern dependencies.
+
+Questions
+=========
+
+------ 1. Project's choices
+
+At first we started developping the project in Golang. Mainly because we
+wanted to dive in this language, but also because Sylvain Utard was eager to
+see someone tackle this problem in Golang, and finaly because we were
+expecting Golang to be very efficient.
+
+We did the project, from A to Z, in Golang but even with all possible
+optimizations we couldn't get under the limit of 512mo of RAM: At first we were
+around 2go with a basic Trie. Then we wrote a word insertion allowing a node
+to store more than one character, the RAM usage dropped down to 1go. Finaly
+we made some minor optimizations to the Trie structure and we landed ourselves
+around 700-800mo of RAM. No way to get under that. Probably because of the
+internal duplication made by its garbage collector.
+
+Thus, we decided to rewrite everything in C++. At first we wanted to use
+boost::serialization but the search was too slow because of the long time
+taken by the `dict.bin` loading. Therefore we wrote our own serialization,
+octet by octed. Then we wrote some kind of API to access the underlying Trie
+with the help of `mmap` syscall.
+
+------ 2. Tests
+
+Not so much tests.
+One python script, called `benchmark.py`, that give an estimate of the qps.
+Another script, called `testsuite.py`, that compare the output of the refence
+binary with ours. The words used for the tests are found randomly in
+`words.txt`.
+
+------ 3. Found case not working?
+
+No, not really. Should we?
+
+------ 4. Data structure
+
+Trie
+ |  uint32_t frequency          # If frequency is == 0, the node isn't a word.
+ |  std::string value
+ |  std::vector<Trie> *children
+ |  unsigned long offset        # Used only for the serialization's part.
+
+We choose `uint32_t` for the frequency because that was the small type that is
+able to store any frequency found in `words.txt`.
+
+An `std::string` may not be the most efficient choice for the value, maybe a
+`char*` would have been better, but its use was easier.
+
+A pointer to a vector of Trie, quite basic. Pointer to avoid performance loss
+when resizing the vector.
+
+An `unsigned long` offset to store the offset for the serialization.
+
+For the serialization:
+
+*   Each line hold a Trie node.
+
+*   Aspect:
+        frequency - number_of_children - string_value - next_brother_offset
+
+*   The order of serialization was 'left hand'. A node is directly followed by
+    its children.
+
+------ 5. Automatic distance choice
+
+First the distance must not be equal or greater than the word length.
+Then:
+
+FIXME FIXME FIXME FIXME
+
+------ 6. Enhance performances
+
+FIXME FIXME FIXME FIXME
+
+------ 7. What's missing to be state-of-the-art?
+
+FIXME FIXME FIXME FIXME
