@@ -248,17 +248,6 @@ exact_search(void* begin, std::string word)
     }
 }
 
-int array_min(std::vector<int> vect) {
-    int min = 100;
-
-    for (size_t i = 0; i < vect.size(); i++)
-    {
-        if (vect[i] < min)
-            min = vect[i];
-    }
-    return min;
-}
-
 int
 dist_search(void* begin, void* node, std::string word, int curr_distance,
             int max_distance, std::string curr_word, std::vector<Word>* res_list,
@@ -333,8 +322,7 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
             transpo = dist_search(begin, child, )
         }*/
 
-        std::vector<int> int_vect{del, subs, insert}; 
-        res = array_min(int_vect); 
+        res = std::min(std::min(del, subs), insert) 
     }
 
     if (word.length() == 0 && get_frequency(node) != 0 && res <= max_distance)
