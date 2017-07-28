@@ -148,20 +148,3 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
     stream.seekp(base_offset);
 
 }
-
-/*int
-Trie::dist_search(Trie* node, std::string word, std::string curr_word, int curr_dist, int max_dist) {
-    if (curr_dist > max_dist) {
-        return curr_dist;
-    }
-
-    int res = 10, mdist = -1, sub = -1, trans = -1, del = -1;
-
-    if (node->frequency == 0) {
-        res = word.length();
-    }
-
-    if (curr_dist + 1 <= max_dist && word.length() > 0) {
-        dist_search()
-    }
-}*/
