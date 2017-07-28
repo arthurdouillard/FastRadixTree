@@ -176,9 +176,33 @@ search_close_words(void* begin, std::string word, int distance)
 {
     if (distance == 0)
         return exact_search(begin, word);
+    else
+    {
+        auto word_list = new std::vector<Word>();
 
-    // Deletion:
-   // compute_distance();
+        if (1 <= distance)
+            dist_search(begin, begin, word.substr(1), 1, distance,
+                        "", word_list, word[0]);
+
+        for (size_t i = 0; i < get_children_count(begin); i++)
+        {
+            void* child = get_child_at(begin, i, begin);
+            int mdist = -1;
+
+            if (get_value(child)[0] == word[0])
+                mdist = 0;
+            else
+                mdist = 1;
+
+            // Substitution
+            dist_search(begin, child, word.substr(1), mdist, distance,
+                         "", word_list, word[0]);
+            // Insertion
+            dist_search(begin, child, word, 1, distance, "", word_list, '\0');
+        }
+
+        return *word_list;
+    }
 }
 
 std::vector<Word>
@@ -194,19 +218,14 @@ exact_search(void* begin, std::string word)
     while(true) {
         found = false;
         if (curr_word.length() < initial_length) {
-     /*
-            std::cout << "Curr node: " << get_value(node)
-                      << " num childs: " << get_children_count(node) << std::endl;
-    */
+
             for (size_t i = 0; i < get_children_count(node); i++) {
                 curr_child = get_child_at(begin, i, node);
                 std::string child_value = get_value(curr_child);
-    //            std::cout << "- child value: <" << child_value << ">\n";
                 int prefix = get_common_prefix(child_value, word);
 
                 // There's a common prefix
                 if (prefix != 0) {
-       //             std::cout << "Stepping in\n"; 
                     node = curr_child;
                     curr_word += word.substr(0, prefix);
                     word = word.substr(prefix);
@@ -227,4 +246,98 @@ exact_search(void* begin, std::string word)
         }
         
     }
+}
+
+int array_min(std::vector<int> vect) {
+    int min = 100;
+
+    for (size_t i = 0; i < vect.size(); i++)
+    {
+        if (vect[i] < min)
+            min = vect[i];
+    }
+    return min;
+}
+
+int
+dist_search(void* begin, void* node, std::string word, int curr_distance,
+            int max_distance, std::string curr_word, std::vector<Word>* res_list,
+            char deleted_char) {
+    
+    if (curr_distance > max_distance)
+        return curr_distance;
+    
+
+    int res = 10, mdist, subs, insert, transpo, del;
+    mdist = subs = insert = transpo = del = -1;
+    bool recall = false;
+
+    // If the node is compressed, remove one char and call
+    // again on it
+    if (get_value(node).length() > 1)
+        recall = true;
+
+    if (get_frequency(node) != 0)
+        res = word.length();
+
+    // Deletion
+    if (curr_distance + 1 <= max_distance && word.length() > 0)
+    {
+        del = dist_search(begin, node, word.substr(1), ++curr_distance,
+                          max_distance, curr_word, res_list, word[0]);
+    }
+
+    for (size_t i = 0; i < get_children_count(node); i++) {
+        void* child = get_child_at(begin, i, node);
+
+        if (word.length() > 0 && get_value(child)[0] == word[0])
+            mdist = 0;
+        else
+            mdist = 1;
+
+        // Substitution
+        if (word.length() > 0 && curr_distance + mdist < max_distance) {
+            curr_word += get_value(child)[0];
+
+            if (recall)
+                child = node;
+
+            subs = dist_search(begin, child, word.substr(1), ++curr_distance,
+                               max_distance, curr_word, res_list, word[0]);
+        }
+
+        // Insertion
+        if (word.length() == 0 || (word.length() > 0 && mdist == 1))
+        {
+            curr_word += get_value(child)[0];
+
+            if (recall)
+                child = node;
+            insert = dist_search(begin, child, word, ++curr_distance,
+                                 max_distance, curr_word, res_list, '\0');
+        }
+
+        // Transposition
+        /*if (word.length() > 0 && curr_word.length() > 0 && mdist == 0
+            && deleted_char == get_value(child)[0]
+            && get_value(node)[0] != get_value(child)[0])
+        {
+            if (recall)
+                child = node;
+            else
+                word = word.substr(1);
+            transpo = dist_search(begin, child, )
+        }*/
+
+        std::vector<int> int_vect{del, subs, insert}; 
+        res = array_min(int_vect); 
+    }
+
+    if (word.length() == 0 && get_frequency(node) != 0 && res <= max_distance)
+    {
+        Word new_word(curr_word, get_frequency(node), res);
+        res_list->push_back(new_word);
+    }
+
+    return res;
 }
