@@ -9,7 +9,7 @@
 Trie *create_trie(std::string path) {
     std::ifstream dict(path);
 
-    auto* root = new Trie(0, "");
+    auto* root = new Trie(1337, "");
     std::string word;
     int frequency;
     //int i = 0;
@@ -194,18 +194,19 @@ exact_search(void* begin, std::string word)
     while(true) {
         found = false;
         if (curr_word.length() < initial_length) {
+     /*
             std::cout << "Curr node: " << get_value(node)
                       << " num childs: " << get_children_count(node) << std::endl;
-
+    */
             for (size_t i = 0; i < get_children_count(node); i++) {
                 curr_child = get_child_at(begin, i, node);
                 std::string child_value = get_value(curr_child);
-                std::cout << "- child value: <" << child_value << ">\n";
+    //            std::cout << "- child value: <" << child_value << ">\n";
                 int prefix = get_common_prefix(child_value, word);
 
                 // There's a common prefix
                 if (prefix != 0) {
-                    std::cout << "Stepping in\n"; 
+       //             std::cout << "Stepping in\n"; 
                     node = curr_child;
                     curr_word += word.substr(0, prefix);
                     word = word.substr(prefix);
