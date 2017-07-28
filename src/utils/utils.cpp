@@ -267,6 +267,10 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
     if (curr_distance > max_distance)
         return curr_distance;
     
+    std::cout << "Node val: " << get_value(node)
+              << " distance: " << curr_distance
+              << " curr_word: " << curr_word
+              << " deleted_char: " << deleted_char << '\n';
 
     int res = 10, mdist, subs, insert, transpo, del;
     mdist = subs = insert = transpo = del = -1;
@@ -335,6 +339,7 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
 
     if (word.length() == 0 && get_frequency(node) != 0 && res <= max_distance)
     {
+        std::cout << "Inserted value: " << curr_word << '\n';
         Word new_word(curr_word, get_frequency(node), res);
         res_list->push_back(new_word);
     }
