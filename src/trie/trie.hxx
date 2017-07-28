@@ -124,12 +124,12 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
     std::cout << "curr offset: "  << offset
               << " bro offset: "  << next_offset
               << " base offset: " << base_offset << '\n';
-    long write_offset = (base_offset - next_offset)
-                        + offset
+    long write_offset = offset
                         + sizeof(uint32_t) * 2
-                        + sizeof(this->value.size());
+                        + this->value.size();
 
     stream.seekp(write_offset);
+    std::cout << "write offset: " << write_offset << '\n';
     stream.write(reinterpret_cast<const char*>(&next_offset),
                  sizeof(next_offset));
     stream.seekp(base_offset);
