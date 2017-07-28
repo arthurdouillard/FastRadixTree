@@ -20,12 +20,14 @@ inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency)
 {   
     auto node = *this;
+
+    // These variables are needed when 'updating' a node.
+    // It's a dirty fix for a problem of copy of value.
+    auto father = *this;
+    int ith_child = 0;
+
     bool final_node = true;
     size_t prefix;
-    bool flag = word.substr(0, 4) == "test"; // i.e. starts with "test"
-
-    if (flag)
-    std::cout << "\n--- " << word << " ---\n";
 
     while (true) {
         for (size_t i = 0; i < node.children->size(); i++)
@@ -35,23 +37,28 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
 
             prefix = get_common_prefix(curr_child.value, word);
             if (prefix == 0)
-                continue;
+                continue; // No common prefix, going to the next brother.
 
             if (prefix == node.children->at(i).value.length())
+            {
+                // A prefix is existing but not whole. Going to its children.
+                father = node;
+                ith_child = i;
+
                 node = node.children->at(i);
+            }
             else
             {
+                // Need for splitting.
+
                 curr_child.value = curr_child.value.substr(prefix);
                 auto new_child = Trie(0, word.substr(0, prefix));
 
-                if (flag)
-                {
-                std::cout << "Split:\n\t<" << new_child.value << "> " << new_child.frequency
-                          << "\n\t-- <" << curr_child.value << "> " << curr_child.frequency << std::endl;
-                }
-
                 new_child.children->push_back(curr_child);
                 node.children->at(i) = new_child;
+
+                father = node;
+                ith_child = father.children->size()-1;
                 node = new_child;
             }
             
@@ -62,24 +69,10 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
 
         if (final_node || !node.children->size())
         {
-            if (!word.size())
+            if (!word.size()) // Updating an existing node.
+                father.children->at(ith_child).frequency = frequency;
+            else // Creating a new final node.
             {
-                node.frequency = frequency;
-                if (flag)
-                {
-                std::cout  << "upd <" << node.value << "> " << frequency << std::endl;
-              /*      for (auto child : *node.children)
-                    {
-                        std::cout << "/\\\t" << child.value
-                                  << " " << child.frequency << std::endl;
-                    }*/
-                }
-            }
-            else
-            {
-                if (flag)
-                    std::cout << "new <" << word << "> " << frequency << std::endl;
-                
                 auto child = Trie(frequency, word);
                 node.children->push_back(child);
             }
