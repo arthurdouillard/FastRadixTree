@@ -22,9 +22,10 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
     auto node = *this;
     bool final_node = true;
     size_t prefix;
-    std::string origin = word;
+    bool flag = word.substr(0, 4) == "test"; // i.e. starts with "test"
 
-  //  std::cout << "\n--- " << word << " ---\n";
+    if (flag)
+    std::cout << "\n--- " << word << " ---\n";
 
     while (true) {
         for (size_t i = 0; i < node.children->size(); i++)
@@ -42,8 +43,13 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
             {
                 curr_child.value = curr_child.value.substr(prefix);
                 auto new_child = Trie(0, word.substr(0, prefix));
-      //          std::cout << "Split:\n\t<" << new_child.value << "> " << new_child.frequency
-      //                    << "\n\t-- <" << curr_child.value << "> " << curr_child.frequency << std::endl;
+
+                if (flag)
+                {
+                std::cout << "Split:\n\t<" << new_child.value << "> " << new_child.frequency
+                          << "\n\t-- <" << curr_child.value << "> " << curr_child.frequency << std::endl;
+                }
+
                 new_child.children->push_back(curr_child);
                 node.children->at(i) = new_child;
                 node = new_child;
@@ -59,13 +65,21 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
             if (!word.size())
             {
                 node.frequency = frequency;
-                if (origin == "test")
-                    std::cout << "Found test with <" << node.value << "> " << node.frequency << std::endl;
-       //         std::cout  << "upd <" << node.value << "> " << frequency << std::endl;
+                if (flag)
+                {
+                std::cout  << "upd <" << node.value << "> " << frequency << std::endl;
+              /*      for (auto child : *node.children)
+                    {
+                        std::cout << "/\\\t" << child.value
+                                  << " " << child.frequency << std::endl;
+                    }*/
+                }
             }
             else
             {
-      //          std::cout << "new <" << word << "> " << frequency << std::endl;
+                if (flag)
+                    std::cout << "new <" << word << "> " << frequency << std::endl;
+                
                 auto child = Trie(frequency, word);
                 node.children->push_back(child);
             }
