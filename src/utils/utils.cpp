@@ -180,9 +180,9 @@ search_close_words(void* begin, std::string word, int distance)
     {
         auto word_list = new std::vector<Word>();
 
-        if (1 <= distance)
-            dist_search(begin, begin, word.substr(1), 1, distance,
-                        "", word_list, word[0]);
+        // Deletion
+        dist_search(begin, begin, word.substr(1), 1, distance,
+                    "", word_list, word[0]);
 
         for (size_t i = 0; i < get_children_count(begin); i++)
         {
@@ -236,7 +236,8 @@ exact_search(void* begin, std::string word)
         }
 
         // No child matches, return the result
-        if (!found && curr_word.length() == initial_length) {
+        if (!found && curr_word.length() == initial_length
+            && get_frequency(node)) {
             Word result(curr_word, get_frequency(node), 0);
             vect.push_back(Word(result));
             return vect;
