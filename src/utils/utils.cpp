@@ -10,14 +10,14 @@ Trie *create_trie(std::string path) {
     auto* root = new Trie(0, "");
     std::string word;
     int frequency;
-    int i = 0;
+    //int i = 0;
     while(dict >> word >> frequency)
     {
-        if (i > 13)
-            break;
-        std::cout << word << " " << frequency << '\n';
+        //if (i > 13)
+        //    break;
+        //std::cout << word << " " << frequency << '\n';
         root->add_word_compressed(word, frequency);
-        i++;
+        //i++;
     }
 
     return root;
@@ -94,13 +94,14 @@ void* get_struct_end(void* offset)
 {
     char* ptr = (char*)offset;
     // Jump at the end of the frequency
-    // Go to the end of the string
     // Jump children count
+    // Go to the end of the string
     // Jump to the end of the brother's offset
     ptr += sizeof(uint32_t) * 2;
     while (*ptr != '\0') {
         ptr++;
     }
+    ptr++;
     ptr += LONG_SIZE;
     return ptr;
 }
@@ -139,14 +140,9 @@ unsigned long get_bro_offset(void* offset) {
 // Returns the i-th child of the node pointed by offset
 void* get_child_at(void* begin, int index, void* offset) {
     char* ptr = (char*)get_struct_end(offset);
-    std::cout << " Getting child at " << index
-              << " first val: " << get_value((void*)ptr) 
-              << " bro offset: " << get_bro_offset(ptr) << '\n';
     while(index > 0)
     {
-        std::cout << " at index " << index;
         ptr = (char*)get_brother(begin, ptr);
-        std::cout << " val: " << get_value((void*)ptr) << '\n';
         index--;
     }
     return ptr;
@@ -187,10 +183,6 @@ exact_search(void* begin, std::string word)
     std::string curr_word("");
     void* node = begin;
     void* curr_child = nullptr;
-    /*node = get_child_at(0, node);
-    std::cout << "val: " << get_value(node)
-              << " freq: " << get_frequency(node)
-              << " child count " << get_children_count(node) << '\n';*/
 
     while(true) {
         found = false;

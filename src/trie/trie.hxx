@@ -77,9 +77,6 @@ inline void
 Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
 {
     auto len_written = this->write_trie(stream);
-    std::cout << "Writing node with val: " << this->value 
-              << " at offset: " << *offset
-              << " len written: " << len_written << '\n';
     this->offset = *offset;
     *offset += len_written;
 
@@ -91,14 +88,16 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
     {
         auto cur_offset = this->children->at(i).offset;
         auto bro_offset = (i == this->children->size()-1) ? 0 : this->children->at(i+1).offset;
-
         this->children->at(i).write_offset(stream, cur_offset, bro_offset);
+
+        long freq_offset = cur_offset + 2*sizeof(uint32_t)
+                                      + this->children->at(i).value.size() + 1;
     }
 }
 
 // freq is uint32_t
+// child number is uint32_t 
 // value has variable length
-// child number is size_t
 // offsets are unsigned longs
 inline size_t
 Trie::write_trie(std::ofstream& stream) {
@@ -106,13 +105,14 @@ Trie::write_trie(std::ofstream& stream) {
     auto value_char = this->value.c_str();
     unsigned long default_brother_loc = 0;
     uint32_t child_size = this->children->size();
-    total_size += sizeof(uint32_t) * 2 + this->value.size()  
-                                          + sizeof(default_brother_loc);
+    total_size += sizeof(uint32_t) * 2 + this->value.size() + 1  
+                                       + sizeof(default_brother_loc);
+                                        
     stream.write(reinterpret_cast<const char *>(&this->frequency),
                  sizeof(this->frequency));
     stream.write(reinterpret_cast<const char*>(&child_size)
                 , sizeof(uint32_t));
-    stream.write(value_char, this->value.size());
+    stream.write(value_char, this->value.size() + 1);
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
     return total_size;
@@ -122,16 +122,12 @@ inline void
 Trie::write_offset(std::ofstream& stream, unsigned long offset,
                    unsigned long next_offset)
 {
+
     long base_offset = stream.tellp();
-    std::cout << "curr offset: "  << offset
-              << " bro offset: "  << next_offset
-              << " base offset: " << base_offset << '\n';
     long write_offset = offset
                         + sizeof(uint32_t) * 2
-                        + this->value.size();
-
+                        + this->value.size() + 1;
     stream.seekp(write_offset);
-    std::cout << "write offset: " << write_offset << '\n';
     stream.write(reinterpret_cast<const char*>(&next_offset),
                  sizeof(next_offset));
     stream.seekp(base_offset);
