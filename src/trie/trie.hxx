@@ -90,8 +90,6 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
         auto bro_offset = (i == this->children->size()-1) ? 0 : this->children->at(i+1).offset;
         this->children->at(i).write_offset(stream, cur_offset, bro_offset);
 
-        long freq_offset = cur_offset + 2*sizeof(uint32_t)
-                                      + this->children->at(i).value.size() + 1;
     }
 }
 

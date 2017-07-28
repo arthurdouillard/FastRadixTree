@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+
 #include "utils.hh"
 #include "../word/word.hh"
 
@@ -50,33 +52,44 @@ void *mmap_file(char* path)
     return trie_addr;
 }
 
-// FIXME -- For debug
-void indent_print(int indent_level, std::string value) {
-    while (indent_level > 0) {
-        std::cout << "--";
-        indent_level--;
-    }
-    std::cout << value << '\n';
-}
-
-void print_child(Trie node, int indent_level)
+// Lexicographic order comparison
+// Returns true if a is smaller than b
+bool lexicoOrder(Word a, Word b)
 {
-    indent_print(indent_level, node.value);
+    char* ch_a = a.content.c_str();
+    char* ch_b = b.content.c_str();
 
-    for (size_t i = 0; i < node.children->size(); i++) {
-        auto curr_child = node.children->at(i);
-        print_child(curr_child, ++indent_level);
+    while (*ch_a != '\0' && *ch_b != '\0') {
+        if (*ch_a != *ch_b)
+            return *ch_a < *ch_b;
+        ch_a++;
+        ch_b++;
     }
+
+    return true;
 }
 
-void print_trie(Trie* t)
+bool compare_words(Word a, Word b)
 {
-    print_child(*t, 0);
+    if (a.distance < b.distance)
+        return true;
+    else if (a.distance == b.distance)
+    {
+        if (a.frequency > b.frequency)
+            return true;
+        else if (a.frequency == b.frequency)
+            return lexicoOrder(a, b);
+    }
+
+    return b;
 }
 
-void pretty_print(std::vector<Word> vect) {
+void pretty_print(std::vector<Word> vect)
+{
     if (vect.size() == 0)
         return;
+
+    std::stable_sort(vect.begin(), vect.end(), compare_words);
 
     std::cout << "[";
     for (size_t i = 0; i < vect.size(); i++) {
@@ -160,8 +173,6 @@ uint32_t get_frequency(void* offset)
     uint32_t* ptr = (uint32_t*)offset;
     return *ptr;
 } 
-
-
 
 std::vector<Word>
 search_close_words(void* begin, std::string word, int distance)
