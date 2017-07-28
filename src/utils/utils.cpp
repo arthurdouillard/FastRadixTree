@@ -218,7 +218,6 @@ exact_search(void* begin, std::string word)
 
         // No child matches, return the result
         if (!found && curr_word.length() == initial_length) {
-            std::cout << " Return node: " << curr_word  << '\n';
             Word result(curr_word, get_frequency(node), 0);
             vect.push_back(Word(result));
             return vect;
