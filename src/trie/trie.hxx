@@ -51,9 +51,15 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
 
         if (final_node || !node.children->size())
         {
-            auto child = Trie(frequency, word);
-            node.children->push_back(child);
-            break;
+            if (!word.size())
+                node.frequency = frequency;
+            else
+            {
+                auto child = Trie(frequency, word);
+                node.children->push_back(child);
+            }
+
+            return;
         }
     }
 }
