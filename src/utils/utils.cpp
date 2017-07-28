@@ -56,8 +56,8 @@ void *mmap_file(char* path)
 // Returns true if a is smaller than b
 bool lexicoOrder(Word a, Word b)
 {
-    char* ch_a = a.content.c_str();
-    char* ch_b = b.content.c_str();
+    auto ch_a = a.get_content().c_str();
+    auto ch_b = b.get_content().c_str();
 
     while (*ch_a != '\0' && *ch_b != '\0') {
         if (*ch_a != *ch_b)
@@ -71,24 +71,21 @@ bool lexicoOrder(Word a, Word b)
 
 bool compare_words(Word a, Word b)
 {
-    if (a.distance < b.distance)
+    if (a.get_distance() < b.get_distance())
         return true;
-    else if (a.distance == b.distance)
+    else if (a.get_distance() == b.get_distance())
     {
-        if (a.frequency > b.frequency)
+        if (a.get_frequency() > b.get_frequency())
             return true;
-        else if (a.frequency == b.frequency)
+        else if (a.get_frequency() == b.get_frequency())
             return lexicoOrder(a, b);
     }
 
-    return b;
+    return false;
 }
 
 void pretty_print(std::vector<Word> vect)
 {
-    if (vect.size() == 0)
-        return;
-
     std::stable_sort(vect.begin(), vect.end(), compare_words);
 
     std::cout << "[";
@@ -180,8 +177,6 @@ search_close_words(void* begin, std::string word, int distance)
     if (distance == 0)
         return exact_search(begin, word);
 
-    auto words = std::make_shared<std::vector<Word>>();
-    
     // Deletion:
    // compute_distance();
 }
@@ -191,6 +186,7 @@ exact_search(void* begin, std::string word)
 {
     bool found;
     size_t initial_length = word.length();
+    std::vector<Word> vect{} ;
     std::string curr_word("");
     void* node = begin;
     void* curr_child = nullptr;
@@ -220,12 +216,15 @@ exact_search(void* begin, std::string word)
         }
 
         // No child matches, return the result
-        if (!found) {
+        if (!found && curr_word.length() == initial_length) {
             std::cout << " Return node: " << curr_word  << '\n';
             Word result(curr_word, get_frequency(node), 0);
-            std::vector<Word> vect;
             vect.push_back(Word(result));
             return vect;
         }
+        else if (!found) {
+            return vect;
+        }
+        
     }
 }

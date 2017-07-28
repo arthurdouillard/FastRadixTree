@@ -80,11 +80,11 @@ Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
     this->offset = *offset;
     *offset += len_written;
 
-    for (int i = 0; i < this->children->size(); i++)
+    for (size_t i = 0; i < this->children->size(); i++)
         this->children->at(i).walk(stream, offset);
 
     // Now all children have got an offset.
-    for (int i = 0; i < this->children->size(); i++)
+    for (size_t i = 0; i < this->children->size(); i++)
     {
         auto cur_offset = this->children->at(i).offset;
         auto bro_offset = (i == this->children->size()-1) ? 0 : this->children->at(i+1).offset;
