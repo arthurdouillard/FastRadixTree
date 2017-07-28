@@ -322,7 +322,7 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
             transpo = dist_search(begin, child, )
         }*/
 
-        res = std::min(std::min(del, subs), insert) 
+        res = std::min(std::min(del, subs), insert);
     }
 
     if (word.length() == 0 && get_frequency(node) != 0 && res <= max_distance)
