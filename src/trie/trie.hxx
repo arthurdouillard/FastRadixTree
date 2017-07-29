@@ -58,7 +58,7 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
                 node.children->at(i) = new_child;
 
                 father = node;
-                ith_child = father.children->size()-1;
+                ith_child = i;
                 node = new_child;
             }
             
