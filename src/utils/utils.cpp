@@ -183,7 +183,7 @@ search_close_words(void* begin, std::string word, int distance)
 
         if (1 <= distance)
             dist_search(begin, begin, word.substr(1), 1, distance,
-                        curr_word, word_list, word[0], "Del");
+                        curr_word, word_list, word[0], 0, "Del");
 
         for (size_t i = 0; i < get_children_count(begin); i++)
         {
@@ -197,9 +197,9 @@ search_close_words(void* begin, std::string word, int distance)
 
             // Substitution
             dist_search(begin, child, word.substr(1), mdist, distance,
-                         curr_word, word_list, word[0], "Sub");
+                        curr_word, word_list, word[0], 0, "Sub");
             // Insertion
-            dist_search(begin, child, word, 1, distance, curr_word, word_list, '\0', "Ins");
+            dist_search(begin, child, word, 1, distance, curr_word, word_list, '\0', 0, "Ins");
         }
 
         return *word_list;
@@ -253,7 +253,7 @@ exact_search(void* begin, std::string word)
 int
 dist_search(void* begin, void* node, std::string word, int curr_distance,
             int max_distance, std::string curr_word, std::vector<Word>* res_list,
-            char deleted_char, std::string step) {
+            char deleted_char, int offset, std::string step) {
     
     if (curr_distance > max_distance)
         return curr_distance;
@@ -264,19 +264,31 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
               << " word: " << word
               << " curr_word: " << curr_word
               << " deleted_char: " << deleted_char
+              << " offset: " << offset
               <<'\n';
 
     int res = 10, mdist, subs, insert, transpo, del;
     mdist = subs = insert = transpo = del = res;
     bool recall = false;
+    int next_offset = 0;
+
+    std::string node_val = get_value(node).substr(offset);
+
+    // The offset is used to read of the node's string
+    // if it is compressed
+    if (get_value(node).length() == 1)
+        offset = 0; 
 
     // If the node is compressed, remove one char and call
     // again on it
-    if (get_value(node).length() > 1)
+    if (node_val.length() > 1)
     {
         recall = true;
-        std::cout << " RECALL!!\n";
+        std::cout << "RECALL!!\n";
     }
+
+    if (recall)
+        next_offset = offset + 1;
 
     if (get_frequency(node) != 0)
         res = word.length();
@@ -285,7 +297,7 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
     if (curr_distance + 1 <= max_distance && word.length() > 0)
     {
         del = dist_search(begin, node, word.substr(1), curr_distance+1,
-                          max_distance, curr_word, res_list, word[0], "del");
+                          max_distance, curr_word, res_list, word[0], next_offset, "del");
         res = std::min(res, del);
     }
 
@@ -301,14 +313,15 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
         else
             mdist = 1;
 
+
         // Substitution
         if (word.length() > 0 && curr_distance + mdist <= max_distance) {
             if (recall)
                 child = node;
 
             subs = dist_search(begin, child, word.substr(1), curr_distance+mdist,
-                               max_distance, curr_word + get_value(node)[0],
-                               res_list, word[0], "Sub");
+                               max_distance, curr_word + node_val[0],
+                               res_list, word[0], next_offset, "Sub");
         }
 
         // Insertion
@@ -318,8 +331,8 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
             if (recall)
                 child = node;
             insert = dist_search(begin, child, word, curr_distance+1,
-                                 max_distance, curr_word + get_value(node)[0],
-                                 res_list, '\0', "Ins");
+                                 max_distance, curr_word + node_val[0],
+                                 res_list, '\0', next_offset, "Ins");
         }
 
         // Transposition
@@ -337,9 +350,12 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
         res = std::min(res, std::min(std::min(del, subs), insert));
     }
 
-    if (word.length() == 0 && get_frequency(node) != 0 && res <= max_distance)
+    // Insert if we're on a word and we have consumed all the
+    // node's chars
+    if (word.length() == 0 && get_frequency(node) != 0 &&
+        get_value(node).length() == 1 && res <= max_distance)
     {
-        std::cout << "Inserted value: " << curr_word << '\n';
+        std::cout << "Inserted value: " << curr_word + get_value(node)[0] << '\n';
         Word new_word(curr_word + get_value(node)[0], get_frequency(node), curr_distance);
         res_list->push_back(new_word);
     }
