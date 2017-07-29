@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 inline size_t
-get_common_prefix(std::string& w1, std::string& w2)
+get_common_prefix(std::string &w1, std::string &w2)
 {
     auto min_len = w1.size() > w2.size() ? w2.size() : w1.size();
 
@@ -18,63 +18,52 @@ get_common_prefix(std::string& w1, std::string& w2)
 
 inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency)
-{   
-    auto node = *this;
+{
+    auto node = this;
 
     // These variables are needed when 'updating' a node.
     // It's a dirty fix for a problem of copy of value.
-    auto father = *this;
-    int ith_child = 0;
-
     bool final_node = true;
     size_t prefix;
 
-    while (true) {
-        for (size_t i = 0; i < node.children->size(); i++)
+    while (true)
+    {
+        for (size_t i = 0; i < node->children->size(); i++)
         {
             final_node = true;
-            auto curr_child = node.children->at(i);
+            auto curr_child = node->children->at(i);
 
-            prefix = get_common_prefix(curr_child.value, word);
+            prefix = get_common_prefix(curr_child->value, word);
             if (prefix == 0)
                 continue; // No common prefix, going to the next brother.
 
-            if (prefix == node.children->at(i).value.length())
-            {
-                // A prefix is existing but not whole. Going to its children.
-                father = node;
-                ith_child = i;
-
-                node = node.children->at(i);
-            }
+            // A prefix is existing but not whole. Going to its children.
+            if (prefix == curr_child->value.length())
+                node = curr_child.get();
             else
             {
                 // Need for splitting.
+                curr_child->value = curr_child->value.substr(prefix);
+                auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
 
-                curr_child.value = curr_child.value.substr(prefix);
-                auto new_child = Trie(0, word.substr(0, prefix));
-
-                new_child.children->push_back(curr_child);
-                node.children->at(i) = new_child;
-
-                father = node;
-                ith_child = i;
-                node = new_child;
+                new_child->children->push_back(curr_child);
+                node->children->at(i) = new_child;
+                node = new_child.get();
             }
-            
+
             final_node = false;
             word = word.substr(prefix);
             break;
         }
 
-        if (final_node || !node.children->size())
+        if (final_node || !node->children->size())
         {
             if (!word.size()) // Updating an existing node.
-                father.children->at(ith_child).frequency = frequency;
+                node->frequency = frequency;
             else // Creating a new final node.
             {
-                auto child = Trie(frequency, word);
-                node.children->push_back(child);
+                auto child = std::make_shared<Trie>(frequency, word);
+                node->children->push_back(child);
             }
 
             return;
@@ -92,57 +81,53 @@ Trie::save_trie(std::string path)
 }
 
 inline void
-Trie::walk(std::ofstream& stream, std::shared_ptr<unsigned long>& offset)
+Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
 {
     auto len_written = this->write_trie(stream);
     this->offset = *offset;
     *offset += len_written;
 
     for (size_t i = 0; i < this->children->size(); i++)
-        this->children->at(i).walk(stream, offset);
+        this->children->at(i)->walk(stream, offset);
 
     // Now all children have got an offset.
     for (size_t i = 0; i < this->children->size(); i++)
     {
-        auto cur_offset = this->children->at(i).offset;
-        auto bro_offset = (i == this->children->size()-1) ? 0 : this->children->at(i+1).offset;
-        this->children->at(i).write_offset(stream, cur_offset, bro_offset);
+        auto cur_offset = this->children->at(i)->offset;
+        auto bro_offset = (i == this->children->size() - 1) ? 0 : this->children->at(i + 1)->offset;
+        this->children->at(i)->write_offset(stream, cur_offset, bro_offset);
     }
 }
 
 // freq is uint32_t
-// child number is uint32_t 
+// child number is uint32_t
 // value has variable length
 // offsets are unsigned longs
 inline size_t
-Trie::write_trie(std::ofstream& stream) {
+Trie::write_trie(std::ofstream &stream)
+{
     size_t total_size = 0;
     auto value_char = this->value.c_str();
     unsigned long default_brother_loc = 0;
     uint32_t child_size = this->children->size();
-    total_size += sizeof(uint32_t) * 2 + this->value.size() + 1  
-                                       + sizeof(default_brother_loc);
-                                        
+    total_size += sizeof(uint32_t) * 2 + this->value.size() + 1 + sizeof(default_brother_loc);
     stream.write(reinterpret_cast<const char *>(&this->frequency),
-                 sizeof(this->frequency));
-    stream.write(reinterpret_cast<const char*>(&child_size)
-                , sizeof(uint32_t));
+                 sizeof(uint32_t));
+    stream.write(reinterpret_cast<const char *>(&child_size), sizeof(uint32_t));
     stream.write(value_char, this->value.size() + 1);
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
     return total_size;
 }
 
-inline void 
-Trie::write_offset(std::ofstream& stream, unsigned long offset,
+inline void
+Trie::write_offset(std::ofstream &stream, unsigned long offset,
                    unsigned long next_offset)
 {
     long base_offset = stream.tellp();
-    long write_offset = offset
-                        + sizeof(uint32_t) * 2
-                        + this->value.size() + 1;
+    long write_offset = offset + sizeof(uint32_t) * 2 + this->value.size() + 1;
     stream.seekp(write_offset);
-    stream.write(reinterpret_cast<const char*>(&next_offset),
+    stream.write(reinterpret_cast<const char *>(&next_offset),
                  sizeof(next_offset));
     stream.seekp(base_offset);
 }

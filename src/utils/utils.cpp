@@ -6,22 +6,16 @@
 
 #define LONG_SIZE sizeof(unsigned long)
 
-Trie *create_trie(std::string path)
+Trie *
+create_trie(std::string path)
 {
     std::ifstream dict(path);
 
-    auto *root = new Trie(1337, "");
+    auto *root = new Trie(0, "");
     std::string word;
     int frequency;
-    //int i = 0;
     while (dict >> word >> frequency)
-    {
-        //if (i > 13)
-        //    break;
-        //std::cout << word << " " << frequency << '\n';
         root->add_word_compressed(word, frequency);
-        //i++;
-    }
 
     return root;
 }
@@ -183,15 +177,17 @@ std::vector<Word>
 search_close_words(void *begin, std::string word, int distance)
 {
     if (distance == 0)
-        return exact_search(begin, word);
+        exact_search(begin, word);
     else
     {
-        auto word_list = new std::vector<Word>();
+        Word_Struct ws;
+        ws.word_list = new std::vector<Word>();
+        ws.word_map = new std::map<std::string, bool>();
         std::string curr_word("");
 
         if (1 <= distance)
             dist_search(begin, begin, word.substr(1), 1, distance,
-                        curr_word, word_list, word[0], 0, "Del");
+                        curr_word, &ws, word[0], 0, "Del");
 
         for (size_t i = 0; i < get_children_count(begin); i++)
         {
@@ -205,12 +201,12 @@ search_close_words(void *begin, std::string word, int distance)
 
             // Substitution
             dist_search(begin, child, word.substr(1), mdist, distance,
-                        curr_word, word_list, word[0], 0, "Sub");
+                        curr_word, &ws, word[0], 0, "Sub");
             // Insertion
-            dist_search(begin, child, word, 1, distance, curr_word, word_list, '\0', 0, "Ins");
+            dist_search(begin, child, word, 1, distance, curr_word, &ws, '\0', 0, "Ins");
         }
-
-        return *word_list;
+        delete(ws.word_map);
+        return *ws.word_list;
     }
 }
 
@@ -274,21 +270,21 @@ int array_min(std::vector<int> vect)
 }
 
 int dist_search(void *begin, void *node, std::string word, int curr_distance,
-                int max_distance, std::string curr_word, std::vector<Word> *res_list,
+                int max_distance, std::string curr_word, Word_Struct *ws,
                 char deleted_char, int offset, std::string step)
 {
 
     if (curr_distance > max_distance)
         return curr_distance;
 
-    std::cout << "Step: " << step
+    /*std::cout << "Step: " << step
               << " Node val: " << get_value(node)
               << " distance: " << curr_distance
               << " word: " << word
               << " curr_word: " << curr_word
               << " deleted_char: " << deleted_char
               << " offset: " << offset
-              << '\n';
+              << '\n';*/
 
     int res = 10, mdist, subs, insert, transpo, del;
     mdist = subs = insert = transpo = del = res;
@@ -303,7 +299,6 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     if (node_val.length() > 1)
     {
         next_offset = offset + 1;
-        std::cout << "trimmed node: " << node_val << " RECALL!!\n";
         auto char_val = node_val[1];
 
         if (word.length() > 0 && char_val == word[0])
@@ -312,18 +307,18 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
             mdist = 1;
 
         del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
-                       res_list, word[0], next_offset, "del");
+                       ws, word[0], next_offset, "del");
 
         subs = substitution(begin, node, word, curr_distance + mdist,
                             max_distance, curr_word + node_val[0],
-                            res_list, word[0], next_offset, "Sub");
+                            ws, word[0], next_offset, "Sub");
 
         insert = insertion(begin, node, word, curr_distance + 1,
                            max_distance, curr_word + node_val[0],
-                           res_list, '\0', next_offset, mdist, "Ins");
+                           ws, '\0', next_offset, mdist, "Ins");
 
         transpo = transposition(begin, node, word, curr_distance,
-                                max_distance, curr_word, res_list,
+                                max_distance, curr_word, ws,
                                 deleted_char, next_offset, node_val, "Trans");
 
         res = array_min(std::vector<int>{res, del, subs, insert, transpo});
@@ -334,7 +329,7 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
             res = word.length();
 
         del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
-                       res_list, word[0], next_offset, "del");
+                       ws, word[0], next_offset, "del");
         res = std::min(res, del);
 
         for (size_t i = 0; i < get_children_count(node); i++)
@@ -348,14 +343,14 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
 
             subs = substitution(begin, child, word, curr_distance + mdist,
                                 max_distance, curr_word + node_val[0],
-                                res_list, word[0], next_offset, "Sub");
+                                ws, word[0], next_offset, "Sub");
 
             insert = insertion(begin, child, word, curr_distance + 1,
                                max_distance, curr_word + node_val[0],
-                               res_list, '\0', next_offset, mdist, "Ins");
+                               ws, '\0', next_offset, mdist, "Ins");
 
             transpo = transposition(begin, child, word, curr_distance,
-                                    max_distance, curr_word, res_list,
+                                    max_distance, curr_word, ws,
                                     deleted_char, next_offset, node_val, "Trans");
 
             res = std::min(res, std::min(std::min(del, subs), insert));
@@ -367,30 +362,35 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     if (word.length() == 0 && get_frequency(node) != 0 &&
         node_val.length() == 1 && res <= max_distance)
     {
-        std::cout << "Inserted value: " << curr_word + node_val[0] << '\n';
-        Word new_word(curr_word + node_val[0], get_frequency(node), curr_distance);
-        res_list->push_back(new_word);
+        auto new_val = curr_word + node_val[0];
+        if (ws->word_map->find(new_val) == ws->word_map->end())
+        {
+            //std::cout << "Inserted value: " << new_val<< '\n';
+            ws->word_map->insert(std::pair<std::string, bool>(new_val, true));
+            Word new_word(new_val, get_frequency(node), curr_distance);
+            ws->word_list->push_back(new_word);
+        }
     }
 
     return res;
 }
 
 int substitution(void *begin, void *child, std::string word, int curr_distance,
-                 int max_distance, std::string curr_word, std::vector<Word> *res_list,
+                 int max_distance, std::string curr_word, Word_Struct *ws,
                  char deleted_char, int offset, std::string step)
 {
     if (word.length() > 0 && curr_distance <= max_distance)
     {
         return dist_search(begin, child, word.substr(1), curr_distance,
                            max_distance, curr_word,
-                           res_list, deleted_char, offset, step);
+                           ws, deleted_char, offset, step);
     }
     else
         return 10;
 }
 
 int insertion(void *begin, void *child, std::string word, int curr_distance,
-              int max_distance, std::string curr_word, std::vector<Word> *res_list,
+              int max_distance, std::string curr_word, Word_Struct *ws,
               char deleted_char, int offset, int mdist, std::string step)
 {
     if (curr_distance <= max_distance &&
@@ -398,20 +398,20 @@ int insertion(void *begin, void *child, std::string word, int curr_distance,
     {
         return dist_search(begin, child, word, curr_distance,
                            max_distance, curr_word,
-                           res_list, deleted_char, offset, step);
+                           ws, deleted_char, offset, step);
     }
     else
         return 10;
 }
 
 int deletion(void *begin, void *node, std::string word, int curr_distance,
-             int max_distance, std::string curr_word, std::vector<Word> *res_list,
+             int max_distance, std::string curr_word, Word_Struct *ws,
              char deleted_char, int offset, std::string step)
 {
     if (curr_distance <= max_distance && word.length() > 0)
     {
         return dist_search(begin, node, word.substr(1), curr_distance,
-                           max_distance, curr_word, res_list, deleted_char,
+                           max_distance, curr_word, ws, deleted_char,
                            offset, step);
     }
     else
@@ -419,18 +419,15 @@ int deletion(void *begin, void *node, std::string word, int curr_distance,
 }
 
 int transposition(void *begin, void *child, std::string word, int curr_distance,
-             int max_distance, std::string curr_word, std::vector<Word> *res_list,
-             char deleted_char, int offset, std::string node_val,
-             std::string step)
+                  int max_distance, std::string curr_word, Word_Struct *ws,
+                  char deleted_char, int offset, std::string node_val,
+                  std::string step)
 {
-    if (word.length() > 0 && curr_word.length() > 0
-                          && deleted_char == get_value(child)[0]
-                          && node_val[0] == word[0]
-                          && node_val[0] != get_value(child)[0])
+    if (word.length() > 0 && curr_word.length() > 0 && deleted_char == get_value(child)[0] && node_val[0] == word[0] && node_val[0] != get_value(child)[0])
     {
         return dist_search(begin, child, word.substr(1), curr_distance,
                            max_distance, curr_word + node_val[0],
-                           res_list, word[0], offset, step);
+                           ws, word[0], offset, step);
     }
     else
         return 10;
