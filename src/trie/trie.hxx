@@ -137,7 +137,6 @@ inline void
 Trie::write_offset(std::ofstream& stream, unsigned long offset,
                    unsigned long next_offset)
 {
-
     long base_offset = stream.tellp();
     long write_offset = offset
                         + sizeof(uint32_t) * 2
@@ -146,5 +145,4 @@ Trie::write_offset(std::ofstream& stream, unsigned long offset,
     stream.write(reinterpret_cast<const char*>(&next_offset),
                  sizeof(next_offset));
     stream.seekp(base_offset);
-
 }

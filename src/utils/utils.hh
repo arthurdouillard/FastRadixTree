@@ -17,4 +17,17 @@ void indent_print(int indent_level, std::string value);
 void pretty_print(std::vector<Word> vect);
 std::vector<Word> search_close_words(void* begin, std::string word, int distance);
 std::vector<Word> exact_search(void* begin, std::string word);
-int dist_search(void*, void*, std::string, int, int, std::string, std::vector<Word>*, char, int, std::string);
+int dist_search(void*, void*, std::string, int, int, std::string,
+                std::vector<Word>*, char, int, std::string);
+
+int substitution(void*, void*, std::string, int, int, std::string,
+                 std::vector<Word>*, char, int, std::string);
+
+int deletion(void*, void*, std::string, int, int, std::string,
+             std::vector<Word>*, char, int, std::string);
+
+int transposition(void*, void*, std::string, int, int, std::string,
+                  std::vector<Word>*, char, int, std::string, std::string);
+
+int insertion(void*, void*, std::string, int, int, std::string,
+              std::vector<Word>*, char, int, int, std::string);
