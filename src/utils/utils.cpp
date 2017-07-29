@@ -288,7 +288,9 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
     for (size_t i = 0; i < get_children_count(node); i++) {
         void* child = get_child_at(begin, i, node);
 
-        //std::cout << "Child value: " << get_value(child) << '\n';
+        /*std::cout << "Child value: " << get_value(child)
+                  << " char at 0: " << get_value(child)[0]
+                  << '\n';*/
 
         if (word.length() > 0 && get_value(child)[0] == word[0])
             mdist = 0;
@@ -296,25 +298,25 @@ dist_search(void* begin, void* node, std::string word, int curr_distance,
             mdist = 1;
 
         // Substitution
-        if (word.length() > 0 && curr_distance + mdist < max_distance) {
-            curr_word += get_value(child)[0];
-
+        if (word.length() > 0 && curr_distance + mdist <= max_distance) {
             if (recall)
                 child = node;
 
             subs = dist_search(begin, child, word.substr(1), curr_distance+mdist,
-                               max_distance, curr_word, res_list, word[0], "Sub");
+                               max_distance, curr_word + get_value(child)[0],
+                               res_list, word[0], "Sub");
         }
 
         // Insertion
-        if (word.length() == 0 || (word.length() > 0 && mdist == 1))
+        if (curr_distance + 1 <= max_distance && 
+           (word.length() == 0 || (word.length() > 0 && mdist == 1)))
         {
-            curr_word += get_value(child)[0];
 
             if (recall)
                 child = node;
             insert = dist_search(begin, child, word, curr_distance+1,
-                                 max_distance, curr_word, res_list, '\0', "Ins");
+                                 max_distance, curr_word + get_value(child)[0],
+                                 res_list, '\0', "Ins");
         }
 
         // Transposition
