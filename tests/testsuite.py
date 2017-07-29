@@ -8,16 +8,13 @@ import sys
 
 
 def compare(word, query1, query2, dist):
-    print('word: {}\ndistance: {}'.format(word, dist))
-
     ans1 = subprocess.check_output(query1, shell=True, stderr=subprocess.PIPE)
     ans2 = subprocess.check_output(query2, shell=True, stderr=subprocess.PIPE)
 
     if ans1 != ans2:
-        print('{} Invalid output {}'.format('\033[91m', '\033[0m'))
+        return False
     else:
-        print('{} Correct output {}'.format('\033[92m', '\033[0m'))
-
+        return True
 
 def get_random_word(path):
     total_bytes = os.stat(path).st_size
@@ -44,7 +41,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Test suite.')
     parser.add_argument('--ref', action='store', dest='ref', required=True)
     parser.add_argument('--own', action='store', dest='own', required=True)
-    parser.add_argument('--run', action='store', type=int, default=10, dest='run')
+    parser.add_argument('--run', action='store', type=int, default=100, dest='run')
     parser.add_argument('--words', action='store', dest='words', required=True)
     parser.add_argument('--dist', action='store', dest='dist', type=int,
                         nargs='+', required=True)
@@ -52,12 +49,13 @@ def main(argv):
     args = parser.parse_args(argv)
 
     for i in range(args.run):
-        print()
         word = get_random_word(args.words)
         for dist in args.dist:
             query1 = create_query(word, args.ref, dist)
             query2 = create_query(word, args.own, dist)
-            compare(word, query1, query2, dist)
+            ans = compare(word, query1, query2, dist)
+            if not ans:
+                print("FAIL:\t{} distance: {}".format(word, dist))
 
 
 if __name__ == '__main__':
