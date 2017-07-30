@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     while (std::cin >> approx >> distance >> word) {
        auto words = search_close_words(mmap_addr, word, distance);
        pretty_print(words);
+       words.clear();
     }
-
     return 0;
 }

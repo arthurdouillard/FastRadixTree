@@ -53,10 +53,10 @@ void *mmap_file(char *path)
 
 // Lexicographic order comparison
 // Returns true if a is smaller than b
-bool lexicoOrder(Word a, Word b)
+bool lexicoOrder(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
 {
-    auto ch_a = a.get_content().c_str();
-    auto ch_b = b.get_content().c_str();
+    auto ch_a = a->get_content().c_str();
+    auto ch_b = b->get_content().c_str();
 
     while (*ch_a != '\0' && *ch_b != '\0')
     {
@@ -66,25 +66,25 @@ bool lexicoOrder(Word a, Word b)
         ch_b++;
     }
 
-    return a.get_content().length() < b.get_content().length();
+    return a->get_content().length() < b->get_content().length();
 }
 
-bool compare_words(Word a, Word b)
+bool compare_words(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
 {
-    if (a.get_distance() < b.get_distance())
+    if (a->get_distance() < b->get_distance())
         return true;
-    else if (a.get_distance() == b.get_distance())
+    else if (a->get_distance() == b->get_distance())
     {
-        if (a.get_frequency() > b.get_frequency())
+        if (a->get_frequency() > b->get_frequency())
             return true;
-        else if (a.get_frequency() == b.get_frequency())
+        else if (a->get_frequency() == b->get_frequency())
             return lexicoOrder(a, b);
     }
 
     return false;
 }
 
-void pretty_print(std::vector<Word> vect)
+void pretty_print(std::vector<std::shared_ptr<Word>> vect)
 {
     std::stable_sort(vect.begin(), vect.end(), compare_words);
 
@@ -93,9 +93,9 @@ void pretty_print(std::vector<Word> vect)
     {
         auto curr_word = vect.at(i);
         std::cout << "{\"word\":"
-                  << "\"" << curr_word.get_content() << "\","
-                  << "\"freq\":" << curr_word.get_frequency() << ","
-                  << "\"distance\":" << curr_word.get_distance() << "}";
+                  << "\"" << curr_word->get_content() << "\","
+                  << "\"freq\":" << curr_word->get_frequency() << ","
+                  << "\"distance\":" << curr_word->get_distance() << "}";
         if (i != vect.size() - 1)
             std::cout << ',';
     }
@@ -170,7 +170,7 @@ uint32_t get_frequency(void *offset)
     return *ptr;
 }
 
-std::vector<Word>
+std::vector<std::shared_ptr<Word>>
 search_close_words(void *begin, std::string word, int distance)
 {
 
@@ -179,8 +179,8 @@ search_close_words(void *begin, std::string word, int distance)
     else
     {
         Word_Struct ws;
-        ws.word_list = new std::vector<Word>();
-        ws.word_map = new std::map<std::string, bool>();
+        ws.word_list = new std::vector<std::shared_ptr<Word>>();
+        ws.word_map = new std::map<std::string, std::shared_ptr<Word>>();
         std::string curr_word("");
 
         if (1 <= distance)
@@ -208,12 +208,12 @@ search_close_words(void *begin, std::string word, int distance)
     }
 }
 
-std::vector<Word>
+std::vector<std::shared_ptr<Word>>
 exact_search(void *begin, std::string word)
 {
     bool found;
     size_t initial_length = word.length();
-    std::vector<Word> vect{};
+    std::vector<std::shared_ptr<Word>> vect{};
     std::string curr_word;
     void *node = begin;
     void *curr_child = nullptr;
@@ -251,8 +251,8 @@ exact_search(void *begin, std::string word)
         if (!found && curr_word.length() == initial_length && get_frequency(node))
         {
             //std::cout << "Found: " << curr_word << " freq: " << get_frequency(node) << '\n';
-            Word result(curr_word, get_frequency(node), 0);
-            vect.push_back(Word(result));
+            auto freq = get_frequency(node);
+            vect.push_back(std::make_shared<Word>(curr_word, freq, 0));
             return vect;
         }
         else if (!found)
@@ -271,6 +271,7 @@ int array_min(std::vector<int> vect)
     return min;
 }
 
+
 int dist_search(void *begin, void *node, std::string word, int curr_distance,
                 int max_distance, std::string curr_word, Word_Struct *ws,
                 char deleted_char, int offset, std::string step)
@@ -286,8 +287,7 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
               << " word: " << word
               << " curr_word: " << curr_word
               << " deleted_char: " << deleted_char
-              << " offset: " << offset
-              << '\n';*/
+              << " offset: " << offset;*/
 
     int res = 10, mdist, subs, insert, transpo, del;
     mdist = subs = insert = transpo = del = res;
@@ -296,6 +296,9 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     int next_offset = 0;
 
     std::string node_val = get_value(node).substr(offset);
+
+    //std::cout << " Stripped val " << node_val 
+    //          << '\n';
 
     // If the node is compressed, remove one char and call
     // again on it
@@ -334,12 +337,14 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
             res = word.length();
 
         del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
-                       ws, word[0], next_offset, "del");
+                       ws, word[0], offset, "del");
         res = std::min(res, del);
 
         for (size_t i = 0; i < get_children_count(node); i++)
         {
             void *child = get_child_at(begin, i, node);
+
+
 
             if (word.length() > 0 && get_value(child)[0] == word[0])
                 mdist = 0;
@@ -372,12 +377,39 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
         // from the init string
         if (new_val[0] == 0)
             new_val = new_val.substr(1);
-        if (ws->word_map->find(new_val) == ws->word_map->end())
+
+        Word new_word(new_val, get_frequency(node), curr_distance);
+        auto old_value = ws->word_map->find(new_val);
+        auto has_updated = false;
+
+        // Update distance
+        if (old_value != ws->word_map->end()
+            && old_value->second->get_distance() > curr_distance)
+        {
+            /*std::cout << "Updated: " << new_val
+                      << " old dist: " << old_value->second->get_distance()
+                      << " new dist: " << curr_distance;*/
+            old_value->second->set_distance(curr_distance);
+            for(auto it = ws->word_list->begin(); it != ws->word_list->end(); ++it)
+            {
+                if ((*it)->get_content() == old_value->second->get_content())
+                {
+                    (*it)->set_distance(curr_distance);
+                    has_updated = true;
+                    break;
+                }
+            }
+        }
+
+        if (old_value == ws->word_map->end() && !has_updated)
         {
             //std::cout << "Inserted value: " << new_val<< '\n';
-            ws->word_map->insert(std::pair<std::string, bool>(new_val, true));
-            Word new_word(new_val, get_frequency(node), curr_distance);
-            ws->word_list->push_back(new_word);
+            std::pair<std::string, std::shared_ptr<Word>> p;
+            auto word_ptr = std::make_shared<Word>(new_word);
+            p.first = new_val;
+            p.second = word_ptr;
+            ws->word_map->insert(p);
+            ws->word_list->push_back(word_ptr);
         }
     }
 

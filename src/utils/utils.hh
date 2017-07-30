@@ -12,8 +12,8 @@
 
 struct Word_Struct
 {
-    std::vector<Word> *word_list;
-    std::map<std::string, bool> *word_map;
+    std::vector<std::shared_ptr<Word>> *word_list;
+    std::map<std::string, std::shared_ptr<Word>> *word_map;
 };
 
 Trie *create_trie(std::string path);
@@ -21,9 +21,9 @@ void *mmap_file(char* path);
 void print_trie(Trie* t);
 void print_child(Trie* t, int indent_level);
 void indent_print(int indent_level, std::string value);
-void pretty_print(std::vector<Word>);
-std::vector<Word> search_close_words(void* begin, std::string word, int distance);
-std::vector<Word> exact_search(void* begin, std::string word);
+void pretty_print(std::vector<std::shared_ptr<Word>>);
+std::vector<std::shared_ptr<Word>> search_close_words(void* begin, std::string word, int distance);
+std::vector<std::shared_ptr<Word>> exact_search(void* begin, std::string word);
 int dist_search(void*, void*, std::string, int, int, std::string,
                 Word_Struct*, char, int, std::string);
 

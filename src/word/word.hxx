@@ -11,3 +11,7 @@ inline int Word::get_distance(){
 inline std::string Word::get_content(){
     return this->content;
 }
+
+inline void Word::set_distance(int value){
+    this->distance = value;
+}

@@ -15,6 +15,7 @@ public:
     int get_distance();
     int get_frequency();
     std::string get_content();
+    void set_distance(int);
 
 private:
     std::string content;

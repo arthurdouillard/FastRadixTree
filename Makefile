@@ -1,5 +1,5 @@
 CC=clang++
-CXXFLAGS=-std=c++11 -Wall -Wextra -O3
+CXXFLAGS=-std=c++11 -Wall -Wextra -g
 
 APP=TextMiningApp
 CMP=TextMiningCompiler
@@ -19,7 +19,7 @@ compiler:
 	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} -o ${CMP}
 
 test:
-	./tests/testsuite.py --ref ref --own . --dist 1 --words words.txt
+	./tests/testsuite.py --ref ref --own . --dist 2 --words words.txt
 
 .PHONY: clean
 clean:
