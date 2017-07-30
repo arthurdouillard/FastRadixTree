@@ -66,7 +66,7 @@ bool lexicoOrder(Word a, Word b)
         ch_b++;
     }
 
-    return true;
+    return a.get_content().length() < b.get_content().length();
 }
 
 bool compare_words(Word a, Word b)
@@ -279,7 +279,8 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     if (curr_distance > max_distance)
         return curr_distance;
 
-    /*std::cout << "Step: " << step
+    /*std::cout << "\n--------------\n"
+              << "Step: " << step
               << " Node val: " << get_value(node)
               << " distance: " << curr_distance
               << " word: " << word
@@ -302,14 +303,16 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     {
         next_offset = offset + 1;
         auto char_val = node_val[1];
-
+        /*std::cout << "RECALL: node_val: " << node_val
+                  << " char_val: " << char_val
+                  << " offset: " << offset << '\n';*/
         if (word.length() > 0 && char_val == word[0])
             mdist = 0;
         else
             mdist = 1;
 
         del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
-                       ws, word[0], next_offset, "del");
+                       ws, word[0], offset, "del");
 
         subs = substitution(begin, node, word, curr_distance + mdist,
                             max_distance, curr_word + node_val[0],
@@ -425,7 +428,9 @@ int transposition(void *begin, void *child, std::string word, int curr_distance,
                   char deleted_char, int offset, std::string node_val,
                   std::string step)
 {
-    if (word.length() > 0 && curr_word.length() > 0 && deleted_char == get_value(child)[0] && node_val[0] == word[0] && node_val[0] != get_value(child)[0])
+    if (word.length() > 0 && deleted_char == get_value(child)[0]
+                          && node_val[0] == word[0]
+                          && node_val[0] != get_value(child)[0])
     {
         return dist_search(begin, child, word.substr(1), curr_distance,
                            max_distance, curr_word + node_val[0],

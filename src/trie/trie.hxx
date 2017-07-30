@@ -27,7 +27,7 @@ Trie::add_word_compressed(std::string word, uint32_t frequency, int i)
     bool flag = false;
     size_t prefix;
 
-    if (i >= 2478700 && i <= 2478720)
+    if (false)
         flag = true;
 
     if (flag)
@@ -105,6 +105,18 @@ Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
     auto len_written = this->write_trie(stream);
     this->offset = *offset;
     *offset += len_written;
+
+    if (this->frequency == 9423)
+    {
+        std::cout << "HERE\n";
+        std::ifstream ifs("dict.bin", std::ifstream::binary);
+        auto new_offset = this->offset += 2*sizeof(uint32_t);
+        ifs.seekg(new_offset);
+        char *buf = new char[this->value.size() + 1];
+        ifs.read(buf, this->value.size() + 1);
+        std::cout << "VALUE : "  << buf << '\n';
+        ifs.close(); 
+    }
 
     for (size_t i = 0; i < this->children->size(); i++)
         this->children->at(i)->walk(stream, offset);

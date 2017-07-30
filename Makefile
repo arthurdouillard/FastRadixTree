@@ -19,9 +19,10 @@ compiler:
 	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} -o ${CMP}
 
 test:
-	./tests/testsuite.py --ref ref --own . --dist 0 --words words.txt
+	./tests/testsuite.py --ref ref --own . --dist 1 --words words.txt
 
 .PHONY: clean
 clean:
 	${RM} ${APP}
 	${RM} ${CMP}
+	${RM} dict.bin
