@@ -126,6 +126,7 @@ std::string get_value(void *offset)
     char *end_ptr = ptr;
     ptr += sizeof(uint32_t) * 2;
     int char_len = 0;
+    end_ptr++;
     while (*end_ptr != '\0')
     {
         end_ptr++;
@@ -141,14 +142,6 @@ void *get_brother(void *begin, void *offset)
     char *end = (char *)get_struct_end(offset);
     unsigned long *bro_offset = (unsigned long *)(end - LONG_SIZE);
     return (char *)begin + *bro_offset;
-}
-
-unsigned long get_bro_offset(void *offset)
-{
-    char *ptr = (char *)get_struct_end(offset);
-    char *bro_offset = ptr - LONG_SIZE;
-    unsigned long *res = (unsigned long *)bro_offset;
-    return *res;
 }
 
 // Returns the i-th child of the node pointed by offset
@@ -221,13 +214,16 @@ exact_search(void *begin, std::string word)
     bool found;
     size_t initial_length = word.length();
     std::vector<Word> vect{};
-    std::string curr_word("");
+    std::string curr_word;
     void *node = begin;
     void *curr_child = nullptr;
 
     while (true)
     {
         found = false;
+        /*std::cout << "\n--- <Word>: " << word << '\n'
+                  << "--- <curr_word>: " << curr_word << '\n';*/
+
         if (curr_word.length() < initial_length)
         {
             for (size_t i = 0; i < get_children_count(node); i++)
@@ -235,10 +231,13 @@ exact_search(void *begin, std::string word)
                 curr_child = get_child_at(begin, i, node);
                 std::string child_value = get_value(curr_child);
                 int prefix = get_common_prefix(child_value, word);
+                /*std::cout << "On child: " << child_value
+                          << " <prefix>: " << prefix << '\n';*/
 
                 // There's a common prefix
-                if (prefix == child_value.length())
+                if (prefix > 0 && prefix == child_value.length())
                 {
+                    //std::cout << "Match!\n";
                     node = curr_child;
                     curr_word += child_value;
                     word = word.substr(prefix);
@@ -251,6 +250,7 @@ exact_search(void *begin, std::string word)
         // No child matches, return the result
         if (!found && curr_word.length() == initial_length && get_frequency(node))
         {
+            //std::cout << "Found: " << curr_word << " freq: " << get_frequency(node) << '\n';
             Word result(curr_word, get_frequency(node), 0);
             vect.push_back(Word(result));
             return vect;
@@ -324,7 +324,7 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
 
         transpo = transposition(begin, node, word, curr_distance,
                                 max_distance, curr_word, ws,
-                                deleted_char, next_offset, node_val, "Trans");
+                                deleted_char, next_offset, node_val, step);
 
         res = array_min(std::vector<int>{res, del, subs, insert, transpo});
     }
@@ -356,7 +356,7 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
 
             transpo = transposition(begin, child, word, curr_distance,
                                     max_distance, curr_word, ws,
-                                    deleted_char, next_offset, node_val, "Trans");
+                                    deleted_char, next_offset, node_val, step);
 
             res = std::min(res, std::min(std::min(del, subs), insert));
         }
@@ -368,6 +368,10 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
         node_val.length() == 1 && res <= max_distance)
     {
         auto new_val = curr_word + node_val[0];
+        // Dirty but necessary to remove '\0' character 
+        // from the init string
+        if (new_val[0] == 0)
+            new_val = new_val.substr(1);
         if (ws->word_map->find(new_val) == ws->word_map->end())
         {
             //std::cout << "Inserted value: " << new_val<< '\n';
@@ -423,19 +427,36 @@ int deletion(void *begin, void *node, std::string word, int curr_distance,
         return 10;
 }
 
+bool can_transpose(char child_char, char deleted_char, char node_char,
+                  std::string word)
+{
+    return (word.length() > 0 && deleted_char == child_char
+                            && node_char == word[0]
+                            && node_char != child_char);
+}
+
 int transposition(void *begin, void *child, std::string word, int curr_distance,
                   int max_distance, std::string curr_word, Word_Struct *ws,
                   char deleted_char, int offset, std::string node_val,
                   std::string step)
 {
-    if (word.length() > 0 && deleted_char == get_value(child)[0]
-                          && node_val[0] == word[0]
-                          && node_val[0] != get_value(child)[0])
+    if (can_transpose(get_value(child)[0], deleted_char, node_val[0], word))
     {
+        /*if (curr_word.length() > 0 )
+        {
+            if (curr_word[curr_word.length() - 1] == get_value(child)[0])
+                return dist_search(begin, child, word.substr(1), curr_distance,
+                                   max_distance, curr_word + node_val[0],
+                                   ws, word[0], offset, step);
+        }
+        else*/
+
+        if (step == "Trans")
+            curr_distance++;
         return dist_search(begin, child, word.substr(1), curr_distance,
-                           max_distance, curr_word + node_val[0],
-                           ws, word[0], offset, step);
+                                      max_distance, curr_word + node_val[0],
+                                      ws, word[0], offset, "Trans");
     }
-    else
-        return 10;
+
+    return 10;
 }

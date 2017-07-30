@@ -27,7 +27,7 @@ Trie::add_word_compressed(std::string word, uint32_t frequency, int i)
     bool flag = false;
     size_t prefix;
 
-    if (false)
+    if(false)
         flag = true;
 
     if (flag)
@@ -50,6 +50,8 @@ Trie::add_word_compressed(std::string word, uint32_t frequency, int i)
             else
             {
                 // Need for splitting.
+                if (flag)
+                    std::cout << "Before split: " << curr_child->value << '\n'; 
                 curr_child->value = curr_child->value.substr(prefix);
                 auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
 
@@ -106,11 +108,11 @@ Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
     this->offset = *offset;
     *offset += len_written;
 
-    if (this->frequency == 9423)
+    if (this->frequency == 29586)
     {
         std::cout << "HERE\n";
         std::ifstream ifs("dict.bin", std::ifstream::binary);
-        auto new_offset = this->offset += 2*sizeof(uint32_t);
+        auto new_offset = this->offset + 2*sizeof(uint32_t);
         ifs.seekg(new_offset);
         char *buf = new char[this->value.size() + 1];
         ifs.read(buf, this->value.size() + 1);
@@ -148,6 +150,7 @@ Trie::write_trie(std::ofstream &stream)
     stream.write(value_char, this->value.size() + 1);
     stream.write(reinterpret_cast<const char *>(&default_brother_loc),
                  sizeof(default_brother_loc));
+    stream.flush();
     return total_size;
 }
 
@@ -160,5 +163,6 @@ Trie::write_offset(std::ofstream &stream, unsigned long offset,
     stream.seekp(write_offset);
     stream.write(reinterpret_cast<const char *>(&next_offset),
                  sizeof(next_offset));
+    stream.flush();
     stream.seekp(base_offset);
 }
