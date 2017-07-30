@@ -7,11 +7,9 @@ CMP=TextMiningCompiler
 APPCC=src/app.cpp
 CMPCC=src/compiler.cpp
 
-SRC=src/utils/utils.cpp #src/trie/trie.hxx src/word/word.hxx
-
+SRC=src/utils/utils.cpp 
 
 all: app compiler
-
 
 app:
 	${CC} ${CXXFLAGS} ${SRC} ${APPCC} -o ${APP}
@@ -20,10 +18,8 @@ app:
 compiler:
 	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} -o ${CMP}
 
-
 test:
 	./tests/testsuite.py --ref ref --own . --dist 0 --words words.txt
-
 
 .PHONY: clean
 clean:

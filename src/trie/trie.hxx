@@ -17,14 +17,21 @@ get_common_prefix(std::string &w1, std::string &w2)
 }
 
 inline void
-Trie::add_word_compressed(std::string word, uint32_t frequency)
+Trie::add_word_compressed(std::string word, uint32_t frequency, int i)
 {
     auto node = this;
 
     // These variables are needed when 'updating' a node.
     // It's a dirty fix for a problem of copy of value.
     bool final_node = true;
+    bool flag = false;
     size_t prefix;
+
+    if (i >= 2478700 && i <= 2478720)
+        flag = true;
+
+    if (flag)
+        std::cout << "\n--- " << word << " | " << frequency << " ---\n";
 
     while (true)
     {
@@ -46,6 +53,12 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
                 curr_child->value = curr_child->value.substr(prefix);
                 auto new_child = std::make_shared<Trie>(0, word.substr(0, prefix));
 
+                if (flag)
+                {
+                    std::cout << "Split:\n\t<" << new_child->value << "> " << new_child->frequency
+                              << "\n\t-- <" << curr_child->value << "> " << curr_child->frequency << std::endl;
+                }
+
                 new_child->children->push_back(curr_child);
                 node->children->at(i) = new_child;
                 node = new_child.get();
@@ -59,9 +72,15 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
         if (final_node || !node->children->size())
         {
             if (!word.size()) // Updating an existing node.
+            {
+                if (flag)
+                    std::cout  << "upd <" << node->value << "> " << frequency << std::endl;          
                 node->frequency = frequency;
+            }
             else // Creating a new final node.
             {
+                if (flag)
+                    std::cout << "new <" << word << "> " << frequency << std::endl;
                 auto child = std::make_shared<Trie>(frequency, word);
                 node->children->push_back(child);
             }

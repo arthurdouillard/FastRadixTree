@@ -14,8 +14,12 @@ create_trie(std::string path)
     auto *root = new Trie(0, "");
     std::string word;
     int frequency;
+    int i = 0;
     while (dict >> word >> frequency)
-        root->add_word_compressed(word, frequency);
+    {
+        root->add_word_compressed(word, frequency, i);
+        i++;
+    }
 
     return root;
 }
@@ -176,8 +180,9 @@ uint32_t get_frequency(void *offset)
 std::vector<Word>
 search_close_words(void *begin, std::string word, int distance)
 {
+
     if (distance == 0)
-        exact_search(begin, word);
+        return exact_search(begin, word);
     else
     {
         Word_Struct ws;
@@ -225,7 +230,6 @@ exact_search(void *begin, std::string word)
         found = false;
         if (curr_word.length() < initial_length)
         {
-
             for (size_t i = 0; i < get_children_count(node); i++)
             {
                 curr_child = get_child_at(begin, i, node);
@@ -233,10 +237,10 @@ exact_search(void *begin, std::string word)
                 int prefix = get_common_prefix(child_value, word);
 
                 // There's a common prefix
-                if (prefix != 0)
+                if (prefix == child_value.length())
                 {
                     node = curr_child;
-                    curr_word += word.substr(0, prefix);
+                    curr_word += child_value;
                     word = word.substr(prefix);
                     found = true;
                     break;
@@ -252,9 +256,7 @@ exact_search(void *begin, std::string word)
             return vect;
         }
         else if (!found)
-        {
             return vect;
-        }
     }
 }
 
