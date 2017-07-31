@@ -220,7 +220,7 @@ exact_search(void *begin, std::string word)
             {
                 curr_child = get_child_at(begin, i, node);
                 std::string child_value = get_value(curr_child);
-                int prefix = get_common_prefix(child_value, word);
+                size_t prefix = get_common_prefix(child_value, word);
 
                 // There's a common prefix
                 if (prefix > 0 && prefix == child_value.length())

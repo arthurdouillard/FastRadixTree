@@ -51,6 +51,9 @@ One python script, called `benchmark.py`, that give an estimate of the qps.
 Another script, called `testsuite.py`, that compare the output of the refence
 binary with ours. The words used for the tests are found randomly in
 `words.txt`.
+- type "make test" to run the ouput comparison.
+ By default, 100 words are picked and tested for distance 0, 1 and 2.
+ Please see the Makefile to specify the args.
 
 ------ 3. Found case not working?
 
