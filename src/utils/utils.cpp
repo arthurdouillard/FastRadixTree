@@ -6,17 +6,19 @@
 
 #define LONG_SIZE sizeof(unsigned long)
 
-Trie *
+std::unique_ptr<Trie>
 create_trie(std::string path)
 {
     std::ifstream dict(path);
 
-    auto *root = new Trie(0, "");
+    std::unique_ptr<Trie> root(new Trie(0, ""));
     std::string word;
     int frequency;
     int i = 0;
     while (dict >> word >> frequency)
     {
+        if (i > 1000)
+            break;
         root->add_word_compressed(word, frequency, i);
         i++;
     }

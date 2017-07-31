@@ -16,7 +16,7 @@ struct Word_Struct
     std::map<std::string, std::shared_ptr<Word>> *word_map;
 };
 
-Trie *create_trie(std::string path);
+std::unique_ptr<Trie> create_trie(std::string path);
 void *mmap_file(char* path);
 void print_trie(Trie* t);
 void print_child(Trie* t, int indent_level);

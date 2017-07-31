@@ -41,7 +41,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Test suite.')
     parser.add_argument('--ref', action='store', dest='ref', required=True)
     parser.add_argument('--own', action='store', dest='own', required=True)
-    parser.add_argument('--run', action='store', type=int, default=10, dest='run')
+    parser.add_argument('--run', action='store', type=int, default=100, dest='run')
     parser.add_argument('--words', action='store', dest='words', required=True)
     parser.add_argument('--dist', action='store', dest='dist', type=int,
                         nargs='+', required=True)

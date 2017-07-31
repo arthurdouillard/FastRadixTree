@@ -23,6 +23,12 @@ public:
         children = new std::vector<std::shared_ptr<Trie>>();
     }
 
+    ~Trie()
+    {
+        children->clear();
+        delete(children);
+    }
+
     void add_word_compressed(std::string, uint32_t, int);
 
     void save_trie(std::string);

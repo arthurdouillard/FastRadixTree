@@ -19,11 +19,8 @@ get_common_prefix(std::string &w1, std::string &w2)
 inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency, int i)
 {
-    auto node = this;
-
-    // These variables are needed when 'updating' a node.
-    // It's a dirty fix for a problem of copy of value.
     bool final_node = true;
+    auto node = this;
     bool flag = false;
     size_t prefix;
 
@@ -107,19 +104,7 @@ Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
     auto len_written = this->write_trie(stream);
     this->offset = *offset;
     *offset += len_written;
-
-    if (this->frequency == 29586)
-    {
-        std::cout << "HERE\n";
-        std::ifstream ifs("dict.bin", std::ifstream::binary);
-        auto new_offset = this->offset + 2*sizeof(uint32_t);
-        ifs.seekg(new_offset);
-        char *buf = new char[this->value.size() + 1];
-        ifs.read(buf, this->value.size() + 1);
-        std::cout << "VALUE : "  << buf << '\n';
-        ifs.close(); 
-    }
-
+   
     for (size_t i = 0; i < this->children->size(); i++)
         this->children->at(i)->walk(stream, offset);
 
