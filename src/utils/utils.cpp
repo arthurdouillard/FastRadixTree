@@ -234,10 +234,12 @@ uint32_t get_frequency(void *offset)
 }
 
 /** 
- *   @brief Jumps to the end of the struct pointed by offset 
+ *   @brief Starts the search for all the words matching the word
+ *   using a Damereau-Levenstein distance 
  *   
- *   @param offset pointer to the beggining of the struct 
- *   @return A pointer to the end of the struct 
+ *   @param word the query word 
+ *   @param distance the maximum distance 
+ *   @return A vector of shared_ptr to the matching words
  */  
 std::vector<std::shared_ptr<Word>>
 search_close_words(void *begin, std::string word, int distance)
@@ -277,6 +279,13 @@ search_close_words(void *begin, std::string word, int distance)
     }
 }
 
+/** 
+ *   @brief Searchs a word into the Trie 
+ *   
+ *   @param begin a pointer to the file 
+ *   @param word the query word 
+ *   @return A vector of shared_ptr to the matching word 
+ */  
 std::vector<std::shared_ptr<Word>>
 exact_search(void *begin, std::string word)
 {
@@ -323,6 +332,12 @@ exact_search(void *begin, std::string word)
     }
 }
 
+/** 
+ *   @brief Returns the minimum value in a std::vector 
+ *   
+ *   @param vect the vector 
+ *   @return the minium value 
+ */  
 int array_min(std::vector<int> vect)
 {
     int min = 100;
@@ -334,6 +349,17 @@ int array_min(std::vector<int> vect)
     return min;
 }
 
+/** 
+ *   @brief Inserts a word into the result vector of words
+ *   If the word was already in the list, replaces it if the distance
+ *   is less important. Otherwise adds the new word. The map prevents duplicate
+ *   values.
+ *   
+ *   @param new_val the word's value 
+ *   @param frequency the word's frequency
+ *   @param ws the struct containing the vector of words 
+ *   @return void 
+ */  
 void insert_word(std::string new_val, uint32_t frequency, Word_Struct *ws,
                  int curr_distance)
 {
@@ -370,6 +396,21 @@ void insert_word(std::string new_val, uint32_t frequency, Word_Struct *ws,
     }
 }
 
+/** 
+ *   @brief Runs the distance computation on compressed nodes 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param node the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param ws the struct containing the vector of words and a map of inserted value 
+ *   @param deleted_char the char previously deleted 
+ *   @param offset the reading offset on the compressed node 
+ *   @param node_val the node's value 
+ *   @param step the previous operation 
+ *   @return the less costly operation 
+ */  
 int manage_compressed_node(void *begin, void *node, std::string word, int curr_distance,
                            int max_distance, std::string curr_word, Word_Struct *ws,
                            char deleted_char, int offset, std::string node_val,
@@ -403,6 +444,23 @@ int manage_compressed_node(void *begin, void *node, std::string word, int curr_d
     return array_min(std::vector<int>{res, del, subs, insert, transpo});
 }
 
+/** 
+ *   @brief Main algorithm for distance search. Tries all operations
+ *   on a node if the max distance is not reached yet. If a matching word
+ *   within the max distance is found, inserts it. 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param node the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param curr_word is the word formed so far 
+ *   @param ws the struct containing the vector of words and a map of inserted value 
+ *   @param deleted_char the char previously deleted 
+ *   @param offset the reading offset on the compressed node 
+ *   @param step the previous operation 
+ *   @return the less costly operation 
+ */  
 int dist_search(void *begin, void *node, std::string word, int curr_distance,
                 int max_distance, std::string curr_word, Word_Struct *ws,
                 char deleted_char, int offset, std::string step)
@@ -467,6 +525,21 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     return res;
 }
 
+/** 
+ *   @brief Substitution operation 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param node the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param curr_word is the word formed so far 
+ *   @param ws the struct containing the vector of words and a map of inserted value 
+ *   @param deleted_char the char previously deleted 
+ *   @param offset the reading offset on the compressed node 
+ *   @param step the previous operation 
+ *   @return the operation's cost 
+ */  
 int substitution(void *begin, void *child, std::string word, int curr_distance,
                  int max_distance, std::string curr_word, Word_Struct *ws,
                  char deleted_char, int offset, std::string step)
@@ -481,6 +554,22 @@ int substitution(void *begin, void *child, std::string word, int curr_distance,
         return 10;
 }
 
+/** 
+ *   @brief Insertion operation. 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param node the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param curr_word is the word formed so far 
+ *   @param ws the struct containing the vector of words and a map of inserted value 
+ *   @param deleted_char the char previously deleted 
+ *   @param offset the reading offset on the compressed node 
+ *   @param mdist is the modification's cost
+ *   @param step the previous operation 
+ *   @return the operation's cost 
+ */  
 int insertion(void *begin, void *child, std::string word, int curr_distance,
               int max_distance, std::string curr_word, Word_Struct *ws,
               char deleted_char, int offset, int mdist, std::string step)
@@ -496,6 +585,20 @@ int insertion(void *begin, void *child, std::string word, int curr_distance,
         return 10;
 }
 
+/** 
+ *   @brief The deletion operation. 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param node the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param curr_word is the 
+ *   @param offset the reading offset on the compressed node 
+ *   @param node_val the node's value 
+ *   @param step the previous operation 
+ *   @return the less costly operation 
+ */  
 int deletion(void *begin, void *node, std::string word, int curr_distance,
              int max_distance, std::string curr_word, Word_Struct *ws,
              char deleted_char, int offset, std::string step)
@@ -510,12 +613,37 @@ int deletion(void *begin, void *node, std::string word, int curr_distance,
         return 10;
 }
 
+/** 
+ *   @brief Returns true if a transposition can be performed 
+ *   
+ *   @param child_char the child's character
+ *   @param deleted_char the char previously deleted 
+ *   @param node_char the current node's character
+ *   @param word the query word 
+ *   @return True if a transposition can be performed 
+ */  
 bool can_transpose(char child_char, char deleted_char, char node_char,
                    std::string word)
 {
     return (word.length() > 0 && deleted_char == child_char && node_char == word[0] && node_char != child_char);
 }
 
+/** 
+ *   @brief Runs the distance computation on compressed nodes 
+ *   
+ *   @param begin a pointer to the beginning of the file 
+ *   @param child the current node 
+ *   @param word the query word
+ *   @param curr_distance the current distance 
+ *   @param max_distance the maximum distance 
+ *   @param curr_word is the word formed so far 
+ *   @param ws the struct containing the vector of words and a map of inserted value 
+ *   @param deleted_char the char previously deleted 
+ *   @param offset the reading offset on the compressed node 
+ *   @param node_val the node's value 
+ *   @param step the previous operation 
+ *   @return the less costly operation 
+ */  
 int transposition(void *begin, void *child, std::string word, int curr_distance,
                   int max_distance, std::string curr_word, Word_Struct *ws,
                   char deleted_char, int offset, std::string node_val,

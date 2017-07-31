@@ -16,6 +16,14 @@ public:
     unsigned long offset;
 
     Trie() {}
+/** 
+ *   @brief Trie node's constructor 
+ *
+ *   @param value the word's content
+ *   @param frequency the word's frequency
+ *   @param children the list of children 
+ *   @return The node 
+ */  
     Trie(uint32_t frequency, std::string value)
         : frequency(frequency)
         , value(value)

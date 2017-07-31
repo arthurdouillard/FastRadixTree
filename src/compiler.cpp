@@ -3,6 +3,12 @@
 
 #include "utils/utils.hh"
 
+/** 
+ *   @brief Starts the compiler . Reads the word from the file passed
+ *   as an argument, creates the trie and serializes it.
+ *   
+ *   @return 0 if no exceptions occured. Aborts if the command is not valid 
+ */  
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         std::cout << "Usage: ./TextMiningCompiler /path/to/word/freq.txt /path/to/output/dict.bin\n";
