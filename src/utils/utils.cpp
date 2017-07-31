@@ -472,17 +472,8 @@ int transposition(void *begin, void *child, std::string word, int curr_distance,
                   char deleted_char, int offset, std::string node_val,
                   std::string step)
 {
-    if (can_transpose(get_value(child)[0], deleted_char, node_val[0], word))
+    if (can_transpose(get_value(child)[offset], deleted_char, node_val[0], word))
     {
-        /*if (curr_word.length() > 0 )
-        {
-            if (curr_word[curr_word.length() - 1] == get_value(child)[0])
-                return dist_search(begin, child, word.substr(1), curr_distance,
-                                   max_distance, curr_word + node_val[0],
-                                   ws, word[0], offset, step);
-        }
-        else*/
-
         if (step == "Trans")
             curr_distance++;
         return dist_search(begin, child, word.substr(1), curr_distance,

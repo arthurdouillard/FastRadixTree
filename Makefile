@@ -19,7 +19,7 @@ compiler:
 	${CC} ${CXXFLAGS} ${SRC} ${CMPCC} -o ${CMP}
 
 test:
-	./tests/testsuite.py --ref ref --own . --dist 2 --words words.txt
+	./tests/testsuite.py --ref ref --own . --dist 3 --words words.txt
 
 .PHONY: clean
 clean:

@@ -35,12 +35,18 @@ internal duplication made by its garbage collector.
 Thus, we decided to rewrite everything in C++. At first we wanted to use
 boost::serialization but the search was too slow because of the long time
 taken by the `dict.bin` loading. Therefore we wrote our own serialization,
-octet by octed. Then we wrote some kind of API to access the underlying Trie
+octet by octet. Then we wrote some kind of API to access the underlying Trie
 with the help of `mmap` syscall.
+
+To sum up, the steps are:
+ - Creation of a a compressed trie
+ - Custom serialization of the trie into a file
+ - When the App is started, the binary file is mmaped
+ - For each query, pointer arithmetic is used to read the values quickly and
+ return the results. 
 
 ------ 2. Tests
 
-Not so much tests.
 One python script, called `benchmark.py`, that give an estimate of the qps.
 Another script, called `testsuite.py`, that compare the output of the refence
 binary with ours. The words used for the tests are found randomly in
@@ -70,26 +76,36 @@ when resizing the vector.
 An `unsigned long` offset to store the offset for the serialization.
 
 For the serialization:
+The following structure is used for each node.
+The fields are written one after the other.
 
-*   Each line hold a Trie node.
+| frequency -> uint32_t
+| child_number -> uint32_t
+| value -> char* of variable length
+| brother's offset -> unsigned long 
 
-*   Aspect:
-        frequency - number_of_children - string_value - next_brother_offset
-
-*   The order of serialization was 'left hand'. A node is directly followed by
-    its children.
+For each node, its first child is written just after its struct.
+The brother's offset is used to iterate through the child.
+The structure is a kind of left-child right-sibling Tree.
 
 ------ 5. Automatic distance choice
+ For the 0 distance, we used an exact search algorithm.
+ The algorithmwas going from node to child if the child matched.
+ If the word was not found, an empty array was returned.
 
-First the distance must not be equal or greater than the word length.
-Then:
-
-FIXME FIXME FIXME FIXME
+ For the other distances, a modified version of the algorithm seen in class was used.
+ At each node, if the current distance was below the maximum one,
+ the insertion, deletion ,substitution and transposition operations were performed.
+ If a node containing a word was reached and the distance was below the max,
+ the value was inserted.
 
 ------ 6. Enhance performances
 
-FIXME FIXME FIXME FIXME
+ In order to perform better, the binary file should be directly written, instead of
+ building the trie first.
+ Also, we should separate the words from the rest of the structure in the serialization. 
 
 ------ 7. What's missing to be state-of-the-art?
-
-FIXME FIXME FIXME FIXME
+ All the optimizations cited above would be necessary.
+ Maybe using a Bloom Filter for the exact search would be more
+ performant.
