@@ -16,17 +16,19 @@ def compare(word, query1, query2, dist):
     else:
         return True
 
-def get_random_word(path):
+def get_random_word(path, dist):
     total_bytes = os.stat(path).st_size
-    random_point = random.randint(0, total_bytes)
+    word = ""
+
+    dist = dist + 1 if dist == 0 else dist
 
     with open(path, 'r') as f:
-        f.seek(random_point)
-        line = f.readline()
+        while(len(word) < dist):
+            random_point = random.randint(0, total_bytes)
+            f.seek(random_point)
+            line = f.readline()
+            word = line.split()
 
-    word = line.split()
-    if len(word) == 0:
-        return get_random_word(path)
     return word[0].strip()
 
 
@@ -47,10 +49,10 @@ def main(argv):
                         nargs='+', required=True)
 
     args = parser.parse_args(argv)
-
-    for i in range(args.run):
-        word = get_random_word(args.words)
-        for dist in args.dist:
+    word = ""
+    for dist in args.dist:
+        for i in range(args.run):
+            word = get_random_word(args.words, dist)
             query1 = create_query(word, args.ref, dist)
             query2 = create_query(word, args.own, dist)
             ans = compare(word, query1, query2, dist)

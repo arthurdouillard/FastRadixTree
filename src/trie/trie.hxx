@@ -2,6 +2,14 @@
 
 #include <stdio.h>
 
+
+/** 
+ *   @brief Returns the prefix length between two words   
+ *  
+ *   @param  w1 is a string containing a word
+ *   @param  w2 is a string containing a word
+ *   @return the prefix length
+ */  
 inline size_t
 get_common_prefix(std::string &w1, std::string &w2)
 {
@@ -16,6 +24,14 @@ get_common_prefix(std::string &w1, std::string &w2)
     return min_len;
 }
 
+
+/** 
+ *   @brief Adds a word in the Trie by splitting nodes if necessary 
+ *  
+ *   @param  word is the word to insert
+ *   @param  frequency is the word's frequency
+ *   @return void 
+ */  
 inline void
 Trie::add_word_compressed(std::string word, uint32_t frequency)
 {
@@ -65,6 +81,13 @@ Trie::add_word_compressed(std::string word, uint32_t frequency)
     }
 }
 
+
+/** 
+ *   @brief Serializes the trie in the file indicated by path
+ *  
+ *   @param  path the path of the file
+ *   @return void 
+ */  
 inline void
 Trie::save_trie(std::string path)
 {
@@ -74,6 +97,15 @@ Trie::save_trie(std::string path)
     this->walk(stream, offset);
 }
 
+/** 
+ *   @brief Walks the trie and serializes every node.
+ *   The node is serialized then it's first child
+ *   Finally, for each child, it's brother's offset is written
+ *  
+ *   @param  offset the current writting offset 
+ *   @param  stream the file's stream 
+ *   @return void 
+ */  
 inline void
 Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
 {
@@ -93,10 +125,12 @@ Trie::walk(std::ofstream &stream, std::shared_ptr<unsigned long> &offset)
     }
 }
 
-// freq is uint32_t
-// child number is uint32_t
-// value has variable length
-// offsets are unsigned longs
+/** 
+ *   @brief Writes the node content into the stream 
+ *  
+ *   @param  stream the file's stream 
+ *   @return number of bytes written 
+ */  
 inline size_t
 Trie::write_trie(std::ofstream &stream)
 {
@@ -115,6 +149,14 @@ Trie::write_trie(std::ofstream &stream)
     return total_size;
 }
 
+/** 
+ *   @brief Write the address of the node's brother in the node's structure 
+ *  
+ *   @param  stream the file's stream 
+ *   @param  offset the node's offset 
+ *   @param  next_offset the node's brother's offset 
+ *   @return void 
+ */  
 inline void
 Trie::write_offset(std::ofstream &stream, unsigned long offset,
                    unsigned long next_offset)

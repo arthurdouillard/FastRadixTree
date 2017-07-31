@@ -6,6 +6,13 @@
 
 #define LONG_SIZE sizeof(unsigned long)
 
+/** 
+ *   @brief Creates the Trie from the words read in
+ *   the file pointed by path
+ *   
+ *   @param path the file's path 
+ *   @return An unique pointer to the root 
+ */  
 std::unique_ptr<Trie>
 create_trie(std::string path)
 {
@@ -20,6 +27,13 @@ create_trie(std::string path)
     return root;
 }
 
+
+/** 
+ *   @brief Loads the file into the RAM for faster access 
+ *   
+ *   @param path the file's path 
+ *   @return A pointer to the file 
+ */  
 void *mmap_file(char *path)
 {
     int fd;
@@ -47,8 +61,14 @@ void *mmap_file(char *path)
     return trie_addr;
 }
 
-// Lexicographic order comparison
-// Returns true if a is smaller than b
+/** 
+ *   @brief Returns True if a is smaller than b using a
+ *   lexicographical comparison
+ *   
+ *   @param a a shared ptr to the Word 
+ *   @param b a shared ptr to the Word 
+ *   @return True if a is smaller than b 
+ */  
 bool lexicoOrder(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
 {
     auto ch_a = a->get_content().c_str();
@@ -65,6 +85,14 @@ bool lexicoOrder(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
     return a->get_content().length() < b->get_content().length();
 }
 
+/** 
+ *   @brief Compares two words using the distance, than the frequency,
+ *   and finally the lexicographical order 
+ *   
+ *   @param a a shared ptr to the Word 
+ *   @param b a shared ptr to the Word 
+ *   @return True if a is smaller than b 
+ */  
 bool compare_words(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
 {
     if (a->get_distance() < b->get_distance())
@@ -80,6 +108,12 @@ bool compare_words(const std::shared_ptr<Word> a, const std::shared_ptr<Word> b)
     return false;
 }
 
+/** 
+ *   @brief Prints the search result in JSON format 
+ *   
+ *   @param vect the vector of words matching the query 
+ *   @return void 
+ */  
 void pretty_print(std::vector<std::shared_ptr<Word>> vect)
 {
     std::stable_sort(vect.begin(), vect.end(), compare_words);
@@ -98,6 +132,12 @@ void pretty_print(std::vector<std::shared_ptr<Word>> vect)
     std::cout << "]\n";
 }
 
+/** 
+ *   @brief Jumps to the end of the struct pointed by offset 
+ *   
+ *   @param offset pointer to the beggining of the struct 
+ *   @return A pointer to the end of the struct 
+ */  
 void *get_struct_end(void *offset)
 {
     char *ptr = (char *)offset;
@@ -111,7 +151,12 @@ void *get_struct_end(void *offset)
     return ptr;
 }
 
-// Returns the node value pointed by offset
+/** 
+ *   @brief Returns the value contained in a node's struct 
+ *   
+ *   @param offset pointer to the beggining of the struct 
+ *   @return A string containing the node's value 
+ */  
 std::string get_value(void *offset)
 {
     char *ptr = (char *)offset;
@@ -129,6 +174,13 @@ std::string get_value(void *offset)
     return std::string(ptr);
 }
 
+/** 
+ *   @brief Returns a pointer to the beggining of the node's brother struct 
+ *   
+ *   @param  begin a pointer to the beginning of the file 
+ *   @param  offset a pointer to the beginning of the node's struct 
+ *   @return A pointer to the brother 
+ */  
 void *get_brother(void *begin, void *offset)
 {
     char *end = (char *)get_struct_end(offset);
@@ -136,7 +188,14 @@ void *get_brother(void *begin, void *offset)
     return (char *)begin + *bro_offset;
 }
 
-// Returns the i-th child of the node pointed by offset
+/** 
+ *   @brief Returns the node's i-th child 
+ *   
+ *   @param  begin a pointer to the beginning of the file 
+ *   @param  index the child's index
+ *   @param  offset pointer to the beggining of the struct 
+ *   @return A pointer to the end of the struct 
+ */  
 void *get_child_at(void *begin, int index, void *offset)
 {
     char *ptr = (char *)get_struct_end(offset);
@@ -148,6 +207,12 @@ void *get_child_at(void *begin, int index, void *offset)
     return ptr;
 }
 
+/** 
+ *   @brief Returns the node's children count
+ *   
+ *   @param offset pointer to the beggining of the struct 
+ *   @return The number of children 
+ */  
 uint32_t get_children_count(void *offset)
 {
     char *ptr = (char *)offset;
@@ -156,12 +221,24 @@ uint32_t get_children_count(void *offset)
     return *child_ptr;
 }
 
+/** 
+ *   @brief Returns the node's frequency
+ *   
+ *   @param offset pointer to the beggining of the struct 
+ *   @return The node's frequency 
+ */  
 uint32_t get_frequency(void *offset)
 {
     uint32_t *ptr = (uint32_t *)offset;
     return *ptr;
 }
 
+/** 
+ *   @brief Jumps to the end of the struct pointed by offset 
+ *   
+ *   @param offset pointer to the beggining of the struct 
+ *   @return A pointer to the end of the struct 
+ */  
 std::vector<std::shared_ptr<Word>>
 search_close_words(void *begin, std::string word, int distance)
 {

@@ -1,0 +1,26 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+*.txt
+*.bin
+
+ref/
+html/
+latex/
