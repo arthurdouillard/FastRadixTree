@@ -14,14 +14,8 @@ create_trie(std::string path)
     std::unique_ptr<Trie> root(new Trie(0, ""));
     std::string word;
     int frequency;
-    int i = 0;
     while (dict >> word >> frequency)
-    {
-        if (i > 1000)
-            break;
-        root->add_word_compressed(word, frequency, i);
-        i++;
-    }
+        root->add_word_compressed(word, frequency);
 
     return root;
 }
@@ -107,10 +101,6 @@ void pretty_print(std::vector<std::shared_ptr<Word>> vect)
 void *get_struct_end(void *offset)
 {
     char *ptr = (char *)offset;
-    // Jump at the end of the frequency
-    // Jump children count
-    // Go to the end of the string
-    // Jump to the end of the brother's offset
     ptr += sizeof(uint32_t) * 2;
     while (*ptr != '\0')
     {
@@ -205,7 +195,7 @@ search_close_words(void *begin, std::string word, int distance)
             // Insertion
             dist_search(begin, child, word, 1, distance, curr_word, &ws, '\0', 0, "Ins");
         }
-        delete(ws.word_map);
+        delete (ws.word_map);
         return *ws.word_list;
     }
 }
@@ -223,8 +213,6 @@ exact_search(void *begin, std::string word)
     while (true)
     {
         found = false;
-        /*std::cout << "\n--- <Word>: " << word << '\n'
-                  << "--- <curr_word>: " << curr_word << '\n';*/
 
         if (curr_word.length() < initial_length)
         {
@@ -233,13 +221,10 @@ exact_search(void *begin, std::string word)
                 curr_child = get_child_at(begin, i, node);
                 std::string child_value = get_value(curr_child);
                 int prefix = get_common_prefix(child_value, word);
-                /*std::cout << "On child: " << child_value
-                          << " <prefix>: " << prefix << '\n';*/
 
                 // There's a common prefix
                 if (prefix > 0 && prefix == child_value.length())
                 {
-                    //std::cout << "Match!\n";
                     node = curr_child;
                     curr_word += child_value;
                     word = word.substr(prefix);
@@ -252,7 +237,6 @@ exact_search(void *begin, std::string word)
         // No child matches, return the result
         if (!found && curr_word.length() == initial_length && get_frequency(node))
         {
-            //std::cout << "Found: " << curr_word << " freq: " << get_frequency(node) << '\n';
             auto freq = get_frequency(node);
             vect.push_back(std::make_shared<Word>(curr_word, freq, 0));
             return vect;
@@ -273,6 +257,74 @@ int array_min(std::vector<int> vect)
     return min;
 }
 
+void insert_word(std::string new_val, uint32_t frequency, Word_Struct *ws,
+                 int curr_distance)
+{
+    if (new_val[0] == 0)
+        new_val = new_val.substr(1);
+
+    Word new_word(new_val, frequency, curr_distance);
+    auto old_value = ws->word_map->find(new_val);
+    auto has_updated = false;
+
+    // Update distance
+    if (old_value != ws->word_map->end() && old_value->second->get_distance() > curr_distance)
+    {
+        old_value->second->set_distance(curr_distance);
+        for (auto it = ws->word_list->begin(); it != ws->word_list->end(); ++it)
+        {
+            if ((*it)->get_content() == old_value->second->get_content())
+            {
+                (*it)->set_distance(curr_distance);
+                has_updated = true;
+                break;
+            }
+        }
+    }
+
+    if (old_value == ws->word_map->end() && !has_updated)
+    {
+        std::pair<std::string, std::shared_ptr<Word>> p;
+        auto word_ptr = std::make_shared<Word>(new_word);
+        p.first = new_val;
+        p.second = word_ptr;
+        ws->word_map->insert(p);
+        ws->word_list->push_back(word_ptr);
+    }
+}
+
+int manage_compressed_node(void *begin, void *node, std::string word, int curr_distance,
+                           int max_distance, std::string curr_word, Word_Struct *ws,
+                           char deleted_char, int offset, std::string node_val,
+                           std::string step)
+{
+    int next_offset = offset + 1;
+    auto char_val = node_val[1];
+    int res = 10, mdist, subs, insert, transpo, del;
+    mdist = subs = insert = transpo = del = res;
+
+    if (word.length() > 0 && char_val == word[0])
+        mdist = 0;
+    else
+        mdist = 1;
+
+    del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
+                   ws, word[0], offset, "del");
+
+    subs = substitution(begin, node, word, curr_distance + mdist,
+                        max_distance, curr_word + node_val[0],
+                        ws, word[0], next_offset, "Sub");
+
+    insert = insertion(begin, node, word, curr_distance + 1,
+                       max_distance, curr_word + node_val[0],
+                       ws, '\0', next_offset, mdist, "Ins");
+
+    transpo = transposition(begin, node, word, curr_distance,
+                            max_distance, curr_word, ws,
+                            deleted_char, next_offset, node_val, step);
+
+    return array_min(std::vector<int>{res, del, subs, insert, transpo});
+}
 
 int dist_search(void *begin, void *node, std::string word, int curr_distance,
                 int max_distance, std::string curr_word, Word_Struct *ws,
@@ -282,57 +334,18 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     if (curr_distance > max_distance)
         return curr_distance;
 
-    /*std::cout << "\n--------------\n"
-              << "Step: " << step
-              << " Node val: " << get_value(node)
-              << " distance: " << curr_distance
-              << " word: " << word
-              << " curr_word: " << curr_word
-              << " deleted_char: " << deleted_char
-              << " offset: " << offset;*/
-
     int res = 10, mdist, subs, insert, transpo, del;
     mdist = subs = insert = transpo = del = res;
-    // The offset is used to read of the node's string
-    // if it is compressed
-    int next_offset = 0;
 
+    // The offset is used to read of the compressed nodes' strings
+    int next_offset = 0;
     std::string node_val = get_value(node).substr(offset);
 
-    //std::cout << " Stripped val " << node_val 
-    //          << '\n';
-
-    // If the node is compressed, remove one char and call
-    // again on it
+    // If the node is compressed, remove one char and call again
     if (node_val.length() > 1)
-    {
-        next_offset = offset + 1;
-        auto char_val = node_val[1];
-        /*std::cout << "RECALL: node_val: " << node_val
-                  << " char_val: " << char_val
-                  << " offset: " << offset << '\n';*/
-        if (word.length() > 0 && char_val == word[0])
-            mdist = 0;
-        else
-            mdist = 1;
-
-        del = deletion(begin, node, word, curr_distance + 1, max_distance, curr_word,
-                       ws, word[0], offset, "del");
-
-        subs = substitution(begin, node, word, curr_distance + mdist,
-                            max_distance, curr_word + node_val[0],
-                            ws, word[0], next_offset, "Sub");
-
-        insert = insertion(begin, node, word, curr_distance + 1,
-                           max_distance, curr_word + node_val[0],
-                           ws, '\0', next_offset, mdist, "Ins");
-
-        transpo = transposition(begin, node, word, curr_distance,
-                                max_distance, curr_word, ws,
-                                deleted_char, next_offset, node_val, step);
-
-        res = array_min(std::vector<int>{res, del, subs, insert, transpo});
-    }
+        res = manage_compressed_node(begin, node, word, curr_distance,
+                                     max_distance, curr_word, ws, deleted_char,
+                                     offset, node_val, step);
     else
     {
         if (get_frequency(node) != 0)
@@ -345,8 +358,6 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
         for (size_t i = 0; i < get_children_count(node); i++)
         {
             void *child = get_child_at(begin, i, node);
-
-
 
             if (word.length() > 0 && get_value(child)[0] == word[0])
                 mdist = 0;
@@ -373,47 +384,8 @@ int dist_search(void *begin, void *node, std::string word, int curr_distance,
     // node's chars
     if (word.length() == 0 && get_frequency(node) != 0 &&
         node_val.length() == 1 && res <= max_distance)
-    {
-        auto new_val = curr_word + node_val[0];
-        // Dirty but necessary to remove '\0' character 
-        // from the init string
-        if (new_val[0] == 0)
-            new_val = new_val.substr(1);
-
-        Word new_word(new_val, get_frequency(node), curr_distance);
-        auto old_value = ws->word_map->find(new_val);
-        auto has_updated = false;
-
-        // Update distance
-        if (old_value != ws->word_map->end()
-            && old_value->second->get_distance() > curr_distance)
-        {
-            /*std::cout << "Updated: " << new_val
-                      << " old dist: " << old_value->second->get_distance()
-                      << " new dist: " << curr_distance;*/
-            old_value->second->set_distance(curr_distance);
-            for(auto it = ws->word_list->begin(); it != ws->word_list->end(); ++it)
-            {
-                if ((*it)->get_content() == old_value->second->get_content())
-                {
-                    (*it)->set_distance(curr_distance);
-                    has_updated = true;
-                    break;
-                }
-            }
-        }
-
-        if (old_value == ws->word_map->end() && !has_updated)
-        {
-            //std::cout << "Inserted value: " << new_val<< '\n';
-            std::pair<std::string, std::shared_ptr<Word>> p;
-            auto word_ptr = std::make_shared<Word>(new_word);
-            p.first = new_val;
-            p.second = word_ptr;
-            ws->word_map->insert(p);
-            ws->word_list->push_back(word_ptr);
-        }
-    }
+        insert_word(curr_word + node_val[0], get_frequency(node),
+                    ws, curr_distance);
 
     return res;
 }
@@ -462,11 +434,9 @@ int deletion(void *begin, void *node, std::string word, int curr_distance,
 }
 
 bool can_transpose(char child_char, char deleted_char, char node_char,
-                  std::string word)
+                   std::string word)
 {
-    return (word.length() > 0 && deleted_char == child_char
-                            && node_char == word[0]
-                            && node_char != child_char);
+    return (word.length() > 0 && deleted_char == child_char && node_char == word[0] && node_char != child_char);
 }
 
 int transposition(void *begin, void *child, std::string word, int curr_distance,
@@ -479,8 +449,8 @@ int transposition(void *begin, void *child, std::string word, int curr_distance,
         if (step == "Trans")
             curr_distance++;
         return dist_search(begin, child, word.substr(1), curr_distance,
-                                      max_distance, curr_word + node_val[0],
-                                      ws, word[0], offset, "Trans");
+                           max_distance, curr_word + node_val[0],
+                           ws, word[0], offset, "Trans");
     }
 
     return 10;

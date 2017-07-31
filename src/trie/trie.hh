@@ -29,7 +29,7 @@ public:
         delete(children);
     }
 
-    void add_word_compressed(std::string, uint32_t, int);
+    void add_word_compressed(std::string, uint32_t);
 
     void save_trie(std::string);
     void walk(std::ofstream&, std::shared_ptr<unsigned long>&);
