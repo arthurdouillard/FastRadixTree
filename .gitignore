@@ -24,3 +24,6 @@
 ref/
 html/
 latex/
+
+*.dSYM
+.vscode
